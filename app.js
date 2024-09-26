@@ -75,8 +75,11 @@ document.addEventListener("DOMContentLoaded", function() {
         inventory.forEach(item => {
             const row = document.createElement("tr");
             row.innerHTML = `
+                <td>${item.productCode}</td>
                 <td>${item.productName}</td>
                 <td>${item.quantity}</td>
+                <td>${item.supplier}</td>
+                <td>${item.dateAdded}</td>
             `;
             inventoryList.appendChild(row);
         });
@@ -87,6 +90,11 @@ document.addEventListener("DOMContentLoaded", function() {
         return productName.charAt(0).toUpperCase() + Math.floor(Math.random() * 10000);
     }
 
+    // Validación para campos vacíos
+    function isFieldEmpty(value) {
+        return value.trim() === "";
+    }
+
     // Registrar compras (agregar productos al inventario)
     const addPurchaseButton = document.getElementById("add-purchase-btn");
     addPurchaseButton.addEventListener("click", function() {
@@ -94,6 +102,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const productQuantity = parseInt(document.getElementById("purchase-product-quantity").value);
         const supplier = document.getElementById("purchase-product-supplier").value;
         const purchaseCost = document.getElementById("purchase-cost").value;
+
+        // Validación de campos vacíos
+        if (isFieldEmpty(productName) || isFieldEmpty(supplier) || isNaN(productQuantity) || isFieldEmpty(purchaseCost)) {
+            alert("Por favor, complete todos los campos correctamente.");
+            return;
+        }
 
         // Generar código de producto
         const productCode = generateProductCode(productName);
@@ -129,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
         purchases.forEach(purchase => {
             const row = document.createElement("tr");
             row.innerHTML = `
+                <td>${purchase.productCode}</td>
                 <td>${purchase.productName}</td>
                 <td>${purchase.productQuantity}</td>
                 <td>${purchase.supplier}</td>
@@ -147,6 +162,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const customer = document.getElementById("sales-customer").value;
         const salesDate = document.getElementById("sales-date").value;
         const salesTotal = document.getElementById("sales-total").value;
+
+        // Validación de campos vacíos
+        if (isFieldEmpty(productName) || isNaN(productQuantity) || isFieldEmpty(customer) || isFieldEmpty(salesTotal)) {
+            alert("Por favor, complete todos los campos correctamente.");
+            return;
+        }
 
         let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
         const productIndex = inventory.findIndex(item => item.productName === productName);
@@ -200,6 +221,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const supplierPhone = document.getElementById("supplier-phone").value;
         const supplierAddress = document.getElementById("supplier-address").value;
         const supplierStatus = document.getElementById("supplier-status").value;
+
+        // Validación de campos vacíos
+        if (isFieldEmpty(supplierCode) || isFieldEmpty(supplierName) || isFieldEmpty(supplierPhone)) {
+            alert("Por favor, complete todos los campos correctamente.");
+            return;
+        }
 
         const suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
         const supplierIndex = suppliers.findIndex(supplier => supplier.supplierCode === supplierCode);

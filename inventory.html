@@ -6,7 +6,7 @@
     <title>Sistema de Inventario</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="inventory">
     <!-- Menú lateral -->
     <div id="sidebar">
         <h2>LA CANASTA</h2>
@@ -15,13 +15,13 @@
             <p id="role-display">Rol</p>
         </div>
         <div class="menu-buttons">
-            <button id="inicio-btn">Inicio</button>
-            <button id="inventario-btn">Inventario</button>
-            <button id="proveedor-btn">Proveedor</button>
-            <button id="reportes-btn">Reportes</button>
+            <button id="inicio-btn" class="nav-btn">Inicio</button>
+            <button id="inventario-btn" class="nav-btn">Inventario</button>
+            <button id="proveedor-btn" class="nav-btn">Proveedor</button>
+            <button id="reportes-btn" class="nav-btn">Reportes</button>
         </div>
-        <button id="purchase-btn">Compra</button>
-        <button id="sales-btn">Venta</button>
+        <button id="purchase-btn" class="nav-btn">Compra</button>
+        <button id="sales-btn" class="nav-btn">Venta</button>
         <button id="logout-btn">Cerrar Sesión</button>
     </div>
 
@@ -36,19 +36,38 @@
         <!-- Tabla de Inventario -->
         <div id="inventario-table" class="table-section" style="display:none;">
             <h1>Inventario</h1>
+            <input type="text" id="search-inventory" placeholder="Buscar producto...">
             <h2>Lista de Productos</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Código</th>
-                        <th>Producto</th>
+                        <th onclick="sortTable(0)">Código</th>
+                        <th onclick="sortTable(1)">Producto</th>
                         <th>Proveedor</th>
                         <th>Stock</th>
                         <th>Fecha de Ingreso</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
-                <tbody id="inventory-list"></tbody>
+                <tbody id="inventory-list">
+                    <!-- Ejemplo de datos -->
+                    <tr>
+                        <td>001</td>
+                        <td>Arroz</td>
+                        <td>Proveedor A</td>
+                        <td>50</td>
+                        <td>2024-09-26</td>
+                        <td class="status-disponible">Disponible</td>
+                    </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>Frijol</td>
+                        <td>Proveedor B</td>
+                        <td>10</td>
+                        <td>2024-09-20</td>
+                        <td class="status-agotado">Agotado</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 

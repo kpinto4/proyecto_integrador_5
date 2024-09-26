@@ -2,10 +2,13 @@
 body {
     margin: 0;
     padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f4f4;
+}
+
+body.inventory {
     display: flex;
     height: 100vh;
-    background: linear-gradient(135deg, #4e54c8, #8f94fb);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* --- Estilos para el formulario de login --- */
@@ -17,10 +20,10 @@ body {
     max-width: 400px;
     width: 100%;
     text-align: center;
+    margin: auto;
     animation: fadeIn 1s ease-in-out;
 }
 
-/* Animación suave para que aparezca el formulario */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -91,13 +94,6 @@ body {
 }
 
 /* --- Estilos para la barra lateral y el contenido principal del sistema de inventario --- */
-
-/* Cambiamos el display a flex para el body, lo que permite colocar el sidebar y el contenido principal uno al lado del otro */
-body.inventory {
-    display: flex;
-    height: auto;
-}
-
 #content-section {
     padding: 20px;
     width: 100%;  /* Esto permite que el contenido ocupe todo el espacio restante después del menú lateral */
@@ -107,14 +103,13 @@ body.inventory {
     margin-left: 250px; /* Añadimos este margen izquierdo para que el contenido no quede debajo del sidebar */
 }
 
-/* Barra lateral */
 #sidebar {
     background-color: #343a40;
     color: white;
     width: 250px;
     padding: 20px;
     height: 100vh;
-    position: fixed; /* Fijamos el sidebar a la izquierda */
+    position: fixed;
     left: 0;
     top: 0;
     display: flex;
@@ -200,13 +195,29 @@ table, th, td {
 
 th {
     background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+th:hover {
+    background-color: #e9ecef;
 }
 
 td {
     background-color: #fff;
 }
 
-/* Botón para agregar y modificar dentro de las tablas */
+/* Estados visuales para el inventario */
+.status-disponible {
+    color: green;
+    font-weight: bold;
+}
+
+.status-agotado {
+    color: red;
+    font-weight: bold;
+}
+
+/* --- Botones y formularios dentro de las tablas --- */
 button.action-btn {
     background-color: #4caf50;
     color: white;
@@ -220,7 +231,6 @@ button.action-btn:hover {
     background-color: #388e3c;
 }
 
-/* --- Estilos para los formularios dentro de las tablas (para compras, ventas, proveedores) --- */
 input, select {
     width: calc(100% - 20px);
     padding: 10px;
@@ -241,4 +251,31 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+/* --- Búsqueda en inventario --- */
+#search-inventory {
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* --- Responsividad --- */
+@media screen and (max-width: 768px) {
+    #content-section {
+        margin-left: 0;
+    }
+
+    #sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .menu-buttons button, #purchase-btn, #sales-btn, #logout-btn {
+        text-align: center;
+    }
 }
