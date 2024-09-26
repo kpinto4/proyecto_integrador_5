@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <div id="sidebar">
+        <h2>LA CANASTA</h2>
+        <div id="user-info">
+            <span id="username-display">Usuario</span>
+            <p id="role-display">Rol</p>
+        </div>
+        <div class="menu-buttons">
+            <button id="inicio-btn">Inicio</button>
+            <button id="inventario-btn">Inventario</button>
+            <button id="proveedor-btn">Proveedor</button>
+            <button id="reportes-btn">Reportes</button>
+        </div>
+        <button id="purchase-btn">Compra</button>
+        <button id="sales-btn">Venta</button>
+        <button id="logout-btn">Cerrar Sesión</button>
+    </div>
+
+    <!-- Contenido principal -->
+    <div id="content-section">
+        <!-- Tabla de Inicio -->
+        <div id="inicio-table" class="table-section">
+            <h1>Bienvenido al Sistema de Inventario</h1>
+            <p>Aquí puedes navegar a las diferentes secciones.</p>
+        </div>
+
+        <!-- Tabla de Inventario -->
+        <div id="inventario-table" class="table-section" style="display:none;">
+            <h1>Inventario</h1>
+            <h2>Lista de Productos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>Proveedor</th>
+                        <th>Stock</th>
+                        <th>Fecha de Ingreso</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Apartado de Compra -->
+        <div id="purchase-table" class="table-section" style="display:none;">
+            <h1>Registrar Compra</h1>
+            <input type="text" id="purchase-product-name" placeholder="Nombre del Producto">
+            <input type="number" id="purchase-product-quantity" placeholder="Cantidad">
+            <input type="text" id="purchase-product-supplier" placeholder="Proveedor">
+            <input type="date" id="purchase-date">
+            <input type="number" id="purchase-cost" placeholder="Costo Total">
+            <button id="add-purchase-btn">Registrar Compra</button>
+
+            <h2>Historial de Compras</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Proveedor</th>
+                        <th>Fecha</th>
+                        <th>Costo</th>
+                    </tr>
+                </thead>
+                <tbody id="purchase-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Apartado de Venta -->
+        <div id="sales-table" class="table-section" style="display:none;">
+            <h1>Registrar Venta</h1>
+            <input type="text" id="sales-product-name" placeholder="Nombre del Producto">
+            <input type="number" id="sales-product-quantity" placeholder="Cantidad">
+            <input type="text" id="sales-customer" placeholder="Cliente">
+            <input type="date" id="sales-date">
+            <input type="number" id="sales-total" placeholder="Total de Venta">
+            <button id="add-sales-btn">Registrar Venta</button>
+
+            <h2>Historial de Ventas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Apartado de Proveedores -->
+        <div id="proveedor-table" class="table-section" style="display:none;">
+            <h1>Gestionar Proveedores</h1>
+            <input type="text" id="supplier-code" placeholder="Código">
+            <input type="text" id="supplier-type" placeholder="Tipo">
+            <input type="text" id="supplier-name" placeholder="Proveedor">
+            <input type="text" id="supplier-phone" placeholder="Teléfono">
+            <input type="text" id="supplier-address" placeholder="Dirección">
+            <select id="supplier-status">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+            </select>
+            <button id="add-supplier-btn">Agregar/Modificar Proveedor</button>
+
+            <h2>Lista de Proveedores</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Proveedor</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="supplier-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Reportes -->
+        <div id="reportes-table" class="table-section" style="display:none;">
+            <h1>Reportes Históricos</h1>
+            <p>Sección para mostrar reportes históricos de compras y ventas.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
