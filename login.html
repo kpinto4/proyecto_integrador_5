@@ -2,22 +2,62 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- 
+        Establece el juego de caracteres a UTF-8 para asegurar que se muestren correctamente
+        los caracteres especiales como tildes y eñes en español.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        Define la escala inicial y garantiza que el diseño sea adaptable a diferentes 
+        tamaños de pantalla, especialmente para dispositivos móviles.
+    -->
     <title>Iniciar Sesión</title>
+    <!-- 
+        El título de la página web que aparecerá en la pestaña del navegador.
+    -->
     <link rel="stylesheet" href="style.css">
+    <!-- 
+        Se enlaza la hoja de estilos externa (style.css) que contiene los estilos para esta página.
+    -->
 </head>
 <body>
-    <!-- Sección de Login -->
+    <!-- 
+        Sección principal de la página de inicio de sesión, donde el usuario introduce
+        sus credenciales (nombre de usuario y contraseña).
+    -->
     <div id="login-section">
+        <!-- Título principal de la página de inicio de sesión -->
         <h1>Iniciar Sesión</h1>
+
+        <!-- 
+            Formulario de inicio de sesión. El formulario incluye campos de entrada
+            para el nombre de usuario y la contraseña, y un botón para enviar la información.
+        -->
         <form id="login-form">
+            <!-- Campo de entrada para el nombre de usuario, con atributo "required" para asegurarse que no esté vacío -->
             <input type="text" id="username" placeholder="Usuario" required>
+
+            <!-- 
+                Campo de entrada para la contraseña, de tipo "password" para ocultar los caracteres.
+                También es obligatorio (required).
+            -->
             <input type="password" id="password" placeholder="Contraseña" required>
+
+            <!-- Botón que envía el formulario cuando el usuario hace clic en él -->
             <button id="login-btn">Iniciar Sesión</button>
         </form>
+
+        <!-- 
+            Párrafo para mostrar mensajes de error, como credenciales incorrectas. Se oculta inicialmente
+            y su color se establece en rojo. Será controlado mediante JavaScript.
+        -->
         <p id="login-error" style="color: red;"></p>
     </div>
 
+    <!-- 
+        Se incluye el archivo JavaScript externo (app.js) donde se controlará la lógica de inicio de sesión,
+        validaciones, y manejo de errores.
+    -->
     <script src="app.js"></script>
 </body>
 </html>

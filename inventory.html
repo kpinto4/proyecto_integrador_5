@@ -2,18 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- 
+        Establece el juego de caracteres a UTF-8, permitiendo la correcta representación de caracteres especiales.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        Ajusta la escala de la página para ser compatible con dispositivos móviles.
+    -->
     <title>Sistema de Inventario</title>
+    <!-- 
+        Título que aparecerá en la pestaña del navegador.
+    -->
     <link rel="stylesheet" href="style.css">
+    <!-- 
+        Enlace a la hoja de estilos externa para dar formato al contenido de la página.
+    -->
 </head>
 <body class="inventory">
-    <!-- Menú lateral -->
+    <!-- 
+        Menú lateral con opciones de navegación.
+    -->
     <div id="sidebar">
         <h2>LA CANASTA</h2>
+        <!-- 
+            Información del usuario: se muestra el nombre de usuario y el rol actual.
+        -->
         <div id="user-info">
             <span id="username-display">Usuario</span>
             <p id="role-display">Rol</p>
         </div>
+        <!-- 
+            Botones de navegación: permiten al usuario ir a diferentes secciones del sistema.
+        -->
         <div class="menu-buttons">
             <button id="inicio-btn" class="nav-btn">Inicio</button>
             <button id="inventario-btn" class="nav-btn">Inventario</button>
@@ -23,19 +43,33 @@
         <button id="purchase-btn" class="nav-btn">Compra</button>
         <button id="sales-btn" class="nav-btn">Venta</button>
         <button id="logout-btn">Cerrar Sesión</button>
+        <!-- 
+            Botón para cerrar la sesión actual del usuario.
+        -->
     </div>
 
-    <!-- Contenido principal -->
+    <!-- 
+        Sección de contenido principal donde se muestran diferentes tablas y formularios
+        según la navegación del usuario.
+    -->
     <div id="content-section">
-        <!-- Tabla de Inicio -->
+        <!-- 
+            Tabla de inicio: esta es la pantalla principal cuando el usuario accede al sistema.
+        -->
         <div id="inicio-table" class="table-section">
             <h1>Bienvenido al Sistema de Inventario</h1>
             <p>Aquí puedes navegar a las diferentes secciones.</p>
         </div>
 
-        <!-- Tabla de Inventario -->
+        <!-- 
+            Tabla de Inventario: muestra la lista de productos con detalles como stock, proveedor, etc.
+            Solo visible cuando el usuario navega a la sección "Inventario".
+        -->
         <div id="inventario-table" class="table-section" style="display:none;">
             <h1>Inventario</h1>
+            <!-- 
+                Campo para buscar productos en la lista.
+            -->
             <input type="text" id="search-inventory" placeholder="Buscar producto...">
             <h2>Lista de Productos</h2>
             <table>
@@ -50,7 +84,9 @@
                     </tr>
                 </thead>
                 <tbody id="inventory-list">
-                    <!-- Ejemplo de datos -->
+                    <!-- 
+                        Ejemplo de productos en el inventario. Los datos reales se generarán dinámicamente.
+                    -->
                     <tr>
                         <td>001</td>
                         <td>Arroz</td>
@@ -71,7 +107,10 @@
             </table>
         </div>
 
-        <!-- Apartado de Compra -->
+        <!-- 
+            Sección de Compra: permite registrar una compra en el sistema. Los datos se recogen a través
+            de varios campos de entrada.
+        -->
         <div id="purchase-table" class="table-section" style="display:none;">
             <h1>Registrar Compra</h1>
             <input type="text" id="purchase-product-name" placeholder="Nombre del Producto">
@@ -81,6 +120,9 @@
             <input type="number" id="purchase-cost" placeholder="Costo Total">
             <button id="add-purchase-btn">Registrar Compra</button>
 
+            <!-- 
+                Historial de compras: lista las compras registradas en el sistema.
+            -->
             <h2>Historial de Compras</h2>
             <table>
                 <thead>
@@ -96,7 +138,9 @@
             </table>
         </div>
 
-        <!-- Apartado de Venta -->
+        <!-- 
+            Sección de Venta: similar a la de compras, permite registrar ventas y ver un historial.
+        -->
         <div id="sales-table" class="table-section" style="display:none;">
             <h1>Registrar Venta</h1>
             <input type="text" id="sales-product-name" placeholder="Nombre del Producto">
@@ -106,6 +150,9 @@
             <input type="number" id="sales-total" placeholder="Total de Venta">
             <button id="add-sales-btn">Registrar Venta</button>
 
+            <!-- 
+                Historial de ventas: lista las ventas registradas en el sistema.
+            -->
             <h2>Historial de Ventas</h2>
             <table>
                 <thead>
@@ -121,7 +168,9 @@
             </table>
         </div>
 
-        <!-- Apartado de Proveedores -->
+        <!-- 
+            Sección de Proveedores: permite gestionar proveedores, agregando/modificando información.
+        -->
         <div id="proveedor-table" class="table-section" style="display:none;">
             <h1>Gestionar Proveedores</h1>
             <input type="text" id="supplier-code" placeholder="Código">
@@ -151,13 +200,18 @@
             </table>
         </div>
 
-        <!-- Reportes -->
+        <!-- 
+            Sección de Reportes: muestra reportes históricos de compras y ventas.
+        -->
         <div id="reportes-table" class="table-section" style="display:none;">
             <h1>Reportes Históricos</h1>
             <p>Sección para mostrar reportes históricos de compras y ventas.</p>
         </div>
     </div>
 
+    <!-- 
+        Archivo JavaScript que gestiona la lógica de interacción de la página (app.js).
+    -->
     <script src="app.js"></script>
 </body>
 </html>
