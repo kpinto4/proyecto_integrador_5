@@ -2,105 +2,102 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  /* Fuente predeterminada */
-    background: #f4f4f4;  /* Fondo gris claro */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f4f4;
 }
 
 /* Estilos específicos para el body en la página del inventario */
 body.inventory {
-    display: flex;  /* Hace que el contenido del cuerpo se alinee horizontalmente */
-    height: 100vh;  /* La altura del cuerpo ocupará toda la pantalla */
+    display: flex;
+    height: 100vh;
 }
 
 /* --- Estilos para el formulario de login --- */
 #login-container {
-    background-color: white;  /* Fondo blanco del formulario */
-    padding: 40px;  /* Espaciado interno */
-    border-radius: 10px;  /* Bordes redondeados */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);  /* Sombra para darle profundidad */
-    max-width: 400px;  /* Ancho máximo del formulario */
-    width: 100%;  /* Ancho completo dentro de su contenedor */
-    text-align: center;  /* Alineación centrada del texto */
-    margin: auto;  /* Centrado vertical y horizontal */
-    animation: fadeIn 1s ease-in-out;  /* Animación de aparición al cargar */
+    background-color: white;
+    padding: 40px;
+    margin: 10vh auto;  /* Usando 10% de la altura de la pantalla como margen superior */
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
 }
 
 /* Definición de la animación fadeIn */
 @keyframes fadeIn {
     from {
-        opacity: 0;  /* Empieza invisible */
-        transform: translateY(-20px);  /* Desplazamiento inicial hacia arriba */
+        opacity: 0;
+        transform: translateY(-20px);
     }
     to {
-        opacity: 1;  /* Aparece completamente */
-        transform: translateY(0);  /* Vuelve a su posición original */
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
 #login-container h2 {
-    margin-bottom: 20px;  /* Espacio debajo del título */
-    font-size: 28px;  /* Tamaño del texto */
-    color: #333;  /* Color del texto oscuro */
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #333;
 }
 
-/* Estilos para el formulario dentro del login */
 #login-container form {
     display: flex;
-    flex-direction: column;  /* Los elementos se apilan verticalmente */
-    align-items: stretch;  /* Los elementos ocupan todo el ancho disponible */
+    flex-direction: column;
+    align-items: stretch;
 }
 
-/* Etiquetas dentro del formulario */
 #login-container label {
-    font-size: 14px;  /* Tamaño del texto */
-    color: #555;  /* Color gris del texto */
-    margin-bottom: 5px;  /* Espacio debajo de las etiquetas */
-    text-align: left;  /* Texto alineado a la izquierda */
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+    text-align: left;
 }
 
-/* Campos de entrada dentro del formulario */
 #login-container input {
-    padding: 12px 15px;  /* Espaciado interno en los inputs */
-    font-size: 16px;  /* Tamaño del texto */
-    margin-bottom: 20px;  /* Espaciado inferior */
-    border: 1px solid #ddd;  /* Borde gris claro */
-    border-radius: 8px;  /* Bordes redondeados */
-    transition: border-color 0.3s ease;  /* Transición suave para el cambio de color de borde */
-    width: 100%;  /* Ancho completo */
-    box-sizing: border-box;  /* Ajusta el ancho incluyendo el padding */
+    padding: 12px 15px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Efecto cuando un input está enfocado */
+/* Efecto de enfoque */
 #login-container input:focus {
-    border-color: #4e54c8;  /* Cambia el color del borde a azul */
-    outline: none;  /* Elimina el contorno predeterminado del navegador */
+    border-color: #4e54c8;
+    outline: none;
 }
 
-/* Estilos para el botón de iniciar sesión */
+/* Botón de iniciar sesión */
 #login-btn {
-    background-color: #4e54c8;  /* Color de fondo azul */
-    color: white;  /* Texto blanco */
-    padding: 12px;  /* Espaciado interno */
-    border: none;  /* Sin borde */
-    border-radius: 8px;  /* Bordes redondeados */
-    cursor: pointer;  /* Cambia el cursor a puntero al pasar sobre el botón */
-    font-size: 16px;  /* Tamaño del texto */
-    transition: background-color 0.3s ease;  /* Transición suave para el cambio de color */
-    box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);  /* Sombra ligera en el botón */
+    background-color: #31b13a;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);
 }
 
-/* Efecto hover para el botón de login */
 #login-btn:hover {
-    background-color: #3639b3;  /* Color más oscuro al pasar el cursor */
+    background-color: #3639b3;
 }
 
-/* Estilo para los mensajes de error en el formulario de login */
+/* Mensajes de error */
 .error-message {
-    color: #ff4d4d;  /* Color rojo */
-    font-size: 14px;  /* Tamaño del texto del mensaje de error */
-    margin-top: -10px;  /* Ajuste del margen superior */
-    height: 20px;  /* Altura fija para mantener el espacio en blanco */
+    color: #ff4d4d;
+    font-size: 14px;
+    margin-top: -10px;
+    height: 20px;
 }
+
 
 /* --- Estilos para la barra lateral y el contenido del sistema de inventario --- */
 #content-section {
