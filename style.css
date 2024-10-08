@@ -106,7 +106,7 @@ body.inventory {
     background-color: #f4f4f4;  /* Fondo gris claro */
     height: 100vh;  /* Ocupa toda la altura de la ventana */
     overflow-y: auto;  /* Permite desplazamiento vertical si el contenido excede la altura */
-    margin-left: 250px;  /* Deja espacio para el menú lateral */
+    margin-left: 290px;  /* Deja espacio para el menú lateral */
 }
 
 /* Estilos del sidebar (barra lateral) */
@@ -121,6 +121,7 @@ body.inventory {
     top: 0;
     display: flex;
     flex-direction: column;  /* Organiza los elementos verticalmente */
+    font-size: 25px;  /* Cambia el tamaño del texto en toda la barra lateral */
 }
 
 /* Título del sidebar */
@@ -165,6 +166,7 @@ body.inventory {
     cursor: pointer;  /* Cursor en forma de puntero */
     text-align: left;  /* Texto alineado a la izquierda */
     width: 100%;  /* Ancho completo */
+    font-size: 19px;  /* Cambia el tamaño del texto en toda la barra lateral */
 }
 
 /* Estilo específico para el botón de cerrar sesión */
