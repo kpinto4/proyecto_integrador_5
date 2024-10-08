@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", function() {
             // Mostrar el nombre y rol del usuario en la interfaz
             document.getElementById("username-display").textContent = username;
             document.getElementById("role-display").textContent = role;
+
+            showTable('inicio-table');
         } else {
             // Si no hay usuario en localStorage, redirigir al login
             window.location.href = "login.html";
