@@ -257,13 +257,12 @@ document.addEventListener("DOMContentLoaded", function() {
         renderSuppliers();
     });
 
-    // Función para mostrar la lista de proveedores
     function renderSuppliers() {
         const supplierList = document.getElementById("supplier-list");
         supplierList.innerHTML = ""; // Limpiar lista actual
-
+    
         const suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
-        suppliers.forEach(supplier => {
+        suppliers.forEach((supplier, index) => {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${supplier.supplierCode}</td>
@@ -272,9 +271,25 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${supplier.supplierPhone}</td>
                 <td>${supplier.supplierAddress}</td>
                 <td>${supplier.supplierStatus}</td>
+                <td><button class="delete-btn" data-index="${index}">Eliminar</button></td> <!-- Botón de eliminar -->
             `;
             supplierList.appendChild(row); // Agregar fila a la tabla
         });
+    
+        // Agregar evento de eliminación a cada botón de eliminar
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                deleteSupplier(index);
+            });
+        });
+    }
+
+    function deleteSupplier(index) {
+        let suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
+        suppliers.splice(index, 1); // Elimina el proveedor del array
+        localStorage.setItem("suppliers", JSON.stringify(suppliers)); // Actualiza localStorage
+        renderSuppliers(); // Actualiza la lista de proveedores
     }
 
     // Función para verificar si hay productos con bajo stock
