@@ -12,11 +12,11 @@ body.inventory {
     height: 100vh;
 }
 
-/* --- Estilos para el formulario de login --- */
+/* --- Estilos para el login --- */
 #login-container {
     background-color: white;
     padding: 40px;
-    margin: 10vh auto;  /* Usando 10% de la altura de la pantalla como margen superior */
+    margin: 10vh auto;
     border-radius: 10px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     max-width: 400px;
@@ -25,7 +25,7 @@ body.inventory {
     animation: fadeIn 1s ease-in-out;
 }
 
-/* Definición de la animación fadeIn */
+/* Efecto fadeIn */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -37,43 +37,7 @@ body.inventory {
     }
 }
 
-#login-container h2 {
-    margin-bottom: 20px;
-    font-size: 28px;
-    color: #333;
-}
-
-#login-container form {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-#login-container label {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 5px;
-    text-align: left;
-}
-
-#login-container input {
-    padding: 12px 15px;
-    font-size: 16px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    transition: border-color 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* Efecto de enfoque */
-#login-container input:focus {
-    border-color: #4e54c8;
-    outline: none;
-}
-
-/* Botón de iniciar sesión */
+/* Botón de login */
 #login-btn {
     background-color: #31b13a;
     color: white;
@@ -82,7 +46,6 @@ body.inventory {
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s ease;
     box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);
 }
 
@@ -90,220 +53,189 @@ body.inventory {
     background-color: #3639b3;
 }
 
-/* Mensajes de error */
-.error-message {
-    color: #ff4d4d;
-    font-size: 14px;
-    margin-top: -10px;
-    height: 20px;
-}
-
-
-/* --- Estilos para la barra lateral y el contenido del sistema de inventario --- */
+/* --- Barra lateral y el contenido del sistema de inventario --- */
 #content-section {
-    padding: 20px;  /* Espaciado interno */
-    width: 100%;  /* Ancho completo, ocupa el espacio restante después del sidebar */
-    background-color: #f4f4f4;  /* Fondo gris claro */
-    height: 100vh;  /* Ocupa toda la altura de la ventana */
-    overflow-y: auto;  /* Permite desplazamiento vertical si el contenido excede la altura */
-    margin-left: 290px;  /* Deja espacio para el menú lateral */
+    padding: 20px;
+    width: 100%;
+    background-color: #f4f4f4;
+    height: 100vh;
+    overflow-y: auto;
+    margin-left: 290px;
 }
 
-/* Estilos del sidebar (barra lateral) */
+/* Estilos del sidebar */
 #sidebar {
-    background-color: #343a40;  /* Fondo oscuro */
-    color: white;  /* Texto blanco */
-    width: 250px;  /* Ancho fijo de la barra lateral */
-    padding: 20px;  /* Espaciado interno */
-    height: 100vh;  /* Altura completa */
-    position: fixed;  /* Fijado en la parte izquierda de la pantalla */
+    background-color: #343a40;
+    color: white;
+    width: 250px;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
     left: 0;
     top: 0;
     display: flex;
-    flex-direction: column;  /* Organiza los elementos verticalmente */
-    font-size: 25px;  /* Cambia el tamaño del texto en toda la barra lateral */
+    flex-direction: column;
+    font-size: 25px;
 }
 
 /* Título del sidebar */
 #sidebar h2 {
-    text-align: center;  /* Texto centrado */
-    margin-bottom: 20px;  /* Espacio debajo del título */
-    color: #ffc107;  /* Texto en color amarillo */
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffc107;
 }
 
-/* Información del usuario en el sidebar */
+/* Información del usuario */
 #user-info {
-    margin-bottom: 30px;  /* Espacio debajo de la información del usuario */
-    text-align: center;  /* Texto centrado */
+    margin-bottom: 30px;
+    text-align: center;
 }
 
 /* Estilos para mostrar el nombre de usuario */
 #username-display {
-    font-size: 18px;  /* Tamaño del texto */
-    font-weight: bold;  /* Texto en negrita */
-    color: #ffc107;  /* Texto amarillo */
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffc107;
 }
 
-/* Estilos para mostrar el rol del usuario */
 #role-display {
-    font-size: 14px;  /* Tamaño del texto */
-    color: #ddd;  /* Color gris claro */
+    font-size: 14px;
+    color: #ddd;
 }
 
 /* Botones del menú en la barra lateral */
 .menu-buttons {
-    margin-bottom: 20px;  /* Espacio debajo del menú de botones */
+    margin-bottom: 20px;
 }
 
 /* Estilos compartidos para todos los botones del menú lateral */
 .menu-buttons button, #purchase-btn, #sales-btn, #logout-btn {
-    background-color: #007bff;  /* Fondo azul */
-    color: white;  /* Texto blanco */
-    border: none;  /* Sin borde */
-    padding: 10px;  /* Espaciado interno */
-    margin: 10px 0;  /* Espacio entre los botones */
-    border-radius: 5px;  /* Bordes redondeados */
-    cursor: pointer;  /* Cursor en forma de puntero */
-    text-align: left;  /* Texto alineado a la izquierda */
-    width: 100%;  /* Ancho completo */
-    font-size: 19px;  /* Cambia el tamaño del texto en toda la barra lateral */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font-size: 19px;
 }
 
 /* Estilo específico para el botón de cerrar sesión */
 #logout-btn {
-    background-color: #dc3545;  /* Fondo rojo */
+    background-color: #dc3545;
 }
 
-/* Efecto hover para todos los botones del menú lateral */
+/* Hover en los botones del menú lateral */
 button:hover {
-    background-color: #0056b3;  /* Color más oscuro al pasar el cursor */
+    background-color: #0056b3;
 }
 
-/* Efecto hover específico para el botón de cerrar sesión */
-button#logout-btn:hover {
-    background-color: #b52a30;  /* Color rojo más oscuro al pasar el cursor */
+#logout-btn:hover {
+    background-color: #b52a30;
 }
 
-/* --- Estilos para las tablas del sistema --- */
+/* --- Estilos de las tablas --- */
 .table-section {
-    display: none;  /* Las tablas están ocultas por defecto */
-    padding: 20px;  /* Espaciado interno */
-    background-color: white;  /* Fondo blanco */
-    border-radius: 8px;  /* Bordes redondeados */
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);  /* Sombra ligera */
-}
-
-/* Títulos de las secciones dentro de las tablas */
-.table-section h1, .table-section h2 {
-    color: #333;  /* Color de texto oscuro */
-    margin-bottom: 20px;  /* Espacio debajo del título */
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Estilos generales para las tablas */
 table {
-    width: 100%;  /* Ancho completo */
-    border-collapse: collapse;  /* Colapsa los bordes de las celdas */
-    margin-top: 20px;  /* Espacio superior */
-    background-color: white;  /* Fondo blanco */
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-/* Bordes de la tabla y las celdas */
 table, th, td {
-    border: 1px solid #ccc;  /* Bordes grises claros */
-    padding: 10px;  /* Espaciado interno */
-    text-align: left;  /* Texto alineado a la izquierda */
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
 }
 
-/* Estilo de las celdas de encabezado */
 th {
-    background-color: #f8f9fa;  /* Fondo gris claro para los encabezados */
-    cursor: pointer;  /* Cursor en forma de puntero para indicar que es clickable */
+    background-color: #f4f4f4;
 }
 
-/* Efecto hover para las celdas de encabezado */
-th:hover {
-    background-color: #e9ecef;  /* Fondo más oscuro al pasar el cursor */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
-/* Color de las celdas de contenido */
-td {
-    background-color: #fff;  /* Fondo blanco */
+/* --- Campos de formularios --- */
+input, select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-/* --- Estados visuales para el inventario (disponible/agotado) --- */
+button {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* --- Campo de búsqueda --- */
+#search-inventory {
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* --- Estados visuales para el inventario --- */
 .status-disponible {
-    color: green;  /* Texto en verde */
-    font-weight: bold;  /* Texto en negrita */
+    color: green;
+    font-weight: bold;
 }
 
 .status-agotado {
-    color: red;  /* Texto en rojo */
-    font-weight: bold;  /* Texto en negrita */
+    color: red;
+    font-weight: bold;
 }
 
-/* --- Estilos para los botones de acción y formularios dentro de las tablas --- */
+/* --- Efecto hover para los botones de acción --- */
 button.action-btn {
-    background-color: #4caf50;  /* Fondo verde */
-    color: white;  /* Texto blanco */
-    border: none;  /* Sin borde */
-    padding: 10px;  /* Espaciado interno */
-    border-radius: 5px;  /* Bordes redondeados */
-    cursor: pointer;  /* Cursor en forma de puntero */
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-/* Efecto hover para los botones de acción */
 button.action-btn:hover {
-    background-color: #388e3c;  /* Fondo verde más oscuro */
+    background-color: #388e3c;
 }
 
-/* Estilos generales para los inputs y selects dentro de las tablas */
-input, select {
-    width: calc(100% - 20px);  /* Ajusta el ancho del input/restando el padding */
-    padding: 10px;  /* Espaciado interno */
-    margin: 10px 0;  /* Espaciado superior e inferior */
-    border: 1px solid #ccc;  /* Borde gris claro */
-    border-radius: 4px;  /* Bordes redondeados */
-}
-
-/* Estilos generales para todos los botones */
-button {
-    padding: 10px;  /* Espaciado interno */
-    margin-top: 10px;  /* Espaciado superior */
-    background-color: #007bff;  /* Fondo azul */
-    color: white;  /* Texto blanco */
-    border: none;  /* Sin borde */
-    border-radius: 4px;  /* Bordes redondeados */
-    cursor: pointer;  /* Cursor en forma de puntero */
-}
-
-/* Efecto hover para los botones */
-button:hover {
-    background-color: #0056b3;  /* Fondo azul más oscuro */
-}
-
-/* --- Estilos para el campo de búsqueda en inventario --- */
-#search-inventory {
-    padding: 10px;  /* Espaciado interno */
-    font-size: 14px;  /* Tamaño del texto */
-    width: 100%;  /* Ancho completo */
-    margin-bottom: 20px;  /* Espacio inferior */
-    border-radius: 5px;  /* Bordes redondeados */
-    border: 1px solid #ccc;  /* Borde gris claro */
-}
-
-/* --- Estilos responsivos para pantallas más pequeñas --- */
+/* --- Estilos responsivos para pantallas pequeñas --- */
 @media screen and (max-width: 768px) {
     #content-section {
-        margin-left: 0;  /* Elimina el margen del sidebar en pantallas pequeñas */
+        margin-left: 0;
     }
 
     #sidebar {
-        width: 100%;  /* El sidebar ocupa todo el ancho */
-        height: auto;  /* Ajusta la altura del sidebar automáticamente */
-        position: relative;  /* Elimina la posición fija */
+        width: 100%;
+        height: auto;
+        position: relative;
     }
 
     .menu-buttons button, #purchase-btn, #sales-btn, #logout-btn {
-        text-align: center;  /* Texto centrado en los botones */
+        text-align: center;
     }
 }

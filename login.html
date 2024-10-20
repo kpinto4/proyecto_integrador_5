@@ -2,68 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- 
-        Establece el juego de caracteres a UTF-8 para asegurar que se muestren correctamente
-        los caracteres especiales como tildes y eñes en español.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 
-        Define la escala inicial y garantiza que el diseño sea adaptable a diferentes 
-        tamaños de pantalla, especialmente para dispositivos móviles.
-    -->
     <title>Iniciar Sesión</title>
-    <!-- 
-        El título de la página web que aparecerá en la pestaña del navegador.
-    -->
     <link rel="stylesheet" href="style.css">
-    <!-- 
-        Se enlaza la hoja de estilos externa (style.css) que contiene los estilos para esta página.
-    -->
 </head>
 <body>
-    <!-- 
-        Contenedor principal del formulario de inicio de sesión. 
-        El id 'login-container' tiene un fondo blanco, bordes redondeados, y está centrado en la página.
-    -->
     <div id="login-container">
-        <!-- 
-            Sección de inicio de sesión que encapsula el formulario. Contiene un título y el formulario en sí.
-        -->
         <h2>Iniciar Sesión</h2>
-        <!-- 
-            Formulario de inicio de sesión. Contiene campos de texto para el nombre de usuario y la contraseña,
-            y un botón para enviar los datos.
-        -->
         <form id="login-form">
-            <!-- 
-                Campo de entrada para el nombre de usuario. Requerido para ser completado.
-                Acepta texto plano.
-            -->
-            <input type="text" id="username" placeholder="Usuario" required>
-
-            <!-- 
-                Campo de entrada para la contraseña. El tipo "password" oculta los caracteres mientras se escribe.
-                También es requerido.
-            -->
-            <input type="password" id="password" placeholder="Contraseña" required>
-
-            <!-- 
-                Botón de inicio de sesión. Envía el formulario al hacer clic.
-            -->
-            <button id="login-btn">Iniciar Sesión</button>
+            <input type="text" id="username" name="username" placeholder="Usuario" required>
+            <input type="password" id="password" name="password" placeholder="Contraseña" required>
+            <button id="login-btn" type="submit">Iniciar Sesión</button>
         </form>
 
-        <!-- 
-            Párrafo utilizado para mostrar mensajes de error. Inicialmente está oculto 
-            y su visibilidad es controlada mediante JavaScript.
-        -->
-        <p class="error-message"></p>
+        <!-- Mensaje de error para mostrar si las credenciales son incorrectas -->
+        <p id="error-message" class="error-message"></p>
     </div>
 
-    <!-- 
-        Se incluye el archivo JavaScript externo (app.js) donde se manejará la lógica de inicio de sesión,
-        validaciones, y manejo de errores.
-    -->
-    <script src="app.js"></script>
+    <!-- Enlazamos el archivo JavaScript del login -->
+    <script src="login.js"></script>
 </body>
 </html>

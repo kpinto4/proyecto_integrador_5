@@ -1,322 +1,369 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // Simulación de usuarios con roles
-    const users = {
-        felipe: { password: "1234", role: "Administrador" },
-        ana: { password: "abcd", role: "Usuario" },
-        carlos: { password: "4567", role: "Supervisor" }
+// Función para guardar datos en LocalStorage (simulando un archivo JSON)
+function guardarDatosEnLocalStorage(clave, datos) {
+    localStorage.setItem(clave, JSON.stringify(datos));
+}
+
+// Función para cargar datos desde LocalStorage (simulando la lectura de un archivo JSON)
+function cargarDatosDeLocalStorage(clave) {
+    const datos = localStorage.getItem(clave);
+    return datos ? JSON.parse(datos) : [];
+}
+
+// Función para verificar si el usuario está autenticado
+function verificarAutenticacion() {
+    const usuarioAutenticado = JSON.parse(localStorage.getItem('usuarioAutenticado'));
+    if (!usuarioAutenticado) {
+        window.location.href = 'login.html';
+    } else {
+        document.getElementById('username-display').textContent = usuarioAutenticado.username;
+    }
+}
+
+// Función para cerrar sesión
+function cerrarSesion() {
+    localStorage.removeItem('usuarioAutenticado');
+    window.location.href = 'login.html';
+}
+
+// Función para generar un número de lote automático
+function generarNumeroDeLote() {
+    const fecha = new Date();
+    const lote = 'L' + fecha.getFullYear().toString().slice(-2) +
+                 ('0' + (fecha.getMonth() + 1)).slice(-2) +
+                 ('0' + fecha.getDate()).slice(-2) +
+                 '-' + Math.floor(1000 + Math.random() * 9000);
+    return lote;
+}
+
+// Función para registrar una compra y actualizar el inventario
+function registrarCompra(event) {
+    event.preventDefault();
+
+    const productoNombre = document.getElementById('purchase-product-name').value;
+    const cantidadComprada = parseInt(document.getElementById('purchase-quantity').value, 10);
+    const precioUnitario = parseFloat(document.getElementById('purchase-price').value);
+    const fechaCompra = new Date().toISOString().split('T')[0];
+    const proveedorSeleccionado = document.getElementById('purchase-provider').value;
+    const lote = generarNumeroDeLote();
+
+    // Nueva compra
+    const nuevaCompra = {
+        id: Date.now(),
+        producto: productoNombre,
+        lote: lote,
+        precio: precioUnitario,
+        cantidad: cantidadComprada,
+        proveedor: proveedorSeleccionado,
+        fecha: fechaCompra
     };
 
-    // Verifica si estamos en la página de login
-    const loginForm = document.getElementById("login-form");
+    // Guardar compra en "compras.json"
+    const compras = cargarDatosDeLocalStorage('compras.json');
+    compras.push(nuevaCompra);
+    guardarDatosEnLocalStorage('compras.json', compras);
 
-    if (loginForm) {
-        // Manejar el evento de envío del formulario de inicio de sesión
-        loginForm.addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevenir la recarga de la página
-            const usernameInput = document.getElementById("username").value.toLowerCase(); // Convertir el usuario a minúsculas
-            const passwordInput = document.getElementById("password").value;
+    // Actualizar el inventario con la nueva compra
+    const productos = cargarDatosDeLocalStorage('productos.json');
+    const productoExistente = productos.find(p => p.nombre === productoNombre);
 
-            // Verificar si el usuario existe y la contraseña es correcta
-            if (users[usernameInput] && users[usernameInput].password === passwordInput) {
-                // Guardar el nombre y rol del usuario en localStorage
-                localStorage.setItem("username", usernameInput);
-                localStorage.setItem("role", users[usernameInput].role);
-
-                // Redirigir al sistema de inventario
-                window.location.href = "inventory.html";
-            } else {
-                document.getElementById("login-error").innerText = "Usuario o contraseña incorrectos."; // Mostrar error
-            }
-        });
+    if (productoExistente) {
+        // Si el producto ya existe, solo actualizamos el stock
+        productoExistente.stock += cantidadComprada;
+    } else {
+        // Si es un producto nuevo, lo agregamos al inventario
+        const nuevoProducto = {
+            id: Date.now(),
+            nombre: productoNombre,
+            lote: lote,
+            precio: precioUnitario,
+            stock: cantidadComprada,
+            fechaIngreso: fechaCompra
+        };
+        productos.push(nuevoProducto);
     }
 
-    // Verificar si estamos en la página de inventario
-    if (window.location.pathname.endsWith("inventory.html")) {
-        const username = localStorage.getItem("username");
-        const role = localStorage.getItem("role");
+    // Guardar el inventario actualizado
+    guardarDatosEnLocalStorage('productos.json', productos);
 
-        if (username && role) {
-            // Mostrar el nombre y rol del usuario en la interfaz
-            document.getElementById("username-display").textContent = username;
-            document.getElementById("role-display").textContent = role;
+    consultarInventario(); // Actualizar la tabla del inventario
+    consultarCompras(); // Actualizar la tabla de compras
+    consultarReportes(); // Actualizar los reportes
+    alert(`Compra registrada con éxito. Lote asignado: ${lote}`);
+}
 
-            showTable('inicio-table');
-        } else {
-            // Si no hay usuario en localStorage, redirigir al login
-            window.location.href = "login.html";
-        }
+// Función para registrar una venta y actualizar el inventario
+function registrarVenta(event) {
+    event.preventDefault();
+
+    const productoId = parseInt(document.getElementById('sales-product-id').value, 10);
+    const cantidadVendida = parseInt(document.getElementById('sales-quantity').value, 10);
+    const fecha = new Date().toISOString().split('T')[0];
+
+    const productos = cargarDatosDeLocalStorage('productos.json');
+    const producto = productos.find(p => p.id === productoId);
+
+    if (producto && producto.stock >= cantidadVendida) {
+        const totalVenta = producto.precio * cantidadVendida;
+
+        const nuevaVenta = {
+            id: Date.now(),
+            producto: producto.nombre,
+            cantidad: cantidadVendida,
+            fecha: fecha,
+            total: totalVenta
+        };
+
+        producto.stock -= cantidadVendida;
+
+        let ventas = cargarDatosDeLocalStorage('ventas.json');
+        ventas.push(nuevaVenta);
+        guardarDatosEnLocalStorage('ventas.json', ventas);
+
+        guardarDatosEnLocalStorage('productos.json', productos); // Actualizar el stock en productos
+
+        alert('Venta registrada con éxito');
+        consultarVentas(); // Actualizar la tabla de ventas
+        consultarInventario(); // Actualizar la tabla del inventario
+        consultarReportes(); // Actualizar los reportes
+    } else {
+        alert('Stock insuficiente o producto no encontrado');
     }
+}
 
-    // Asignar eventos a los botones de navegación para cambiar de sección
-    document.getElementById("inicio-btn").addEventListener("click", () => showTable("inicio-table"));
-    document.getElementById("inventario-btn").addEventListener("click", () => showTable("inventario-table"));
-    document.getElementById("proveedor-btn").addEventListener("click", () => showTable("proveedor-table"));
-    document.getElementById("reportes-btn").addEventListener("click", () => showTable("reportes-table"));
-    document.getElementById("purchase-btn").addEventListener("click", () => showTable("purchase-table"));
-    document.getElementById("sales-btn").addEventListener("click", () => showTable("sales-table"));
+// Función para consultar y mostrar el inventario en la tabla
+function consultarInventario() {
+    const productos = cargarDatosDeLocalStorage('productos.json');
+    let tablaInventario = '';
 
-    // Manejar el cierre de sesión
-    document.getElementById("logout-btn").addEventListener("click", () => {
-        localStorage.removeItem("username"); // Eliminar nombre de usuario
-        localStorage.removeItem("role"); // Eliminar rol del usuario
-        window.location.href = "login.html"; // Redirigir al login
+    productos.forEach(producto => {
+        tablaInventario += `<tr>
+            <td>${producto.id}</td>
+            <td>${producto.nombre}</td>
+            <td>${producto.lote}</td>
+            <td>${producto.precio}</td>
+            <td>${producto.stock}</td>
+            <td>${producto.fechaIngreso}</td>
+        </tr>`;
     });
 
-    // Función para mostrar una tabla según la sección seleccionada
-    function showTable(tableId) {
-        const tables = document.querySelectorAll('.table-section'); // Seleccionar todas las secciones de tabla
-        tables.forEach(table => table.style.display = 'none'); // Ocultar todas las tablas
-        document.getElementById(tableId).style.display = 'block'; // Mostrar solo la tabla seleccionada
-    }
+    document.getElementById('inventory-list').innerHTML = tablaInventario;
+}
 
-    // Función para mostrar la lista del inventario en la tabla
-    function renderInventory() {
-        const inventoryList = document.getElementById("inventory-list");
-        inventoryList.innerHTML = ""; // Limpiar la lista actual
+// Función para consultar y mostrar las compras en la tabla de compras
+function consultarCompras() {
+    const compras = cargarDatosDeLocalStorage('compras.json');
+    let tablaCompras = '';
 
-        // Obtener inventario de localStorage o inicializar un array vacío
-        const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
-        inventory.forEach(item => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${item.productCode}</td>
-                <td>${item.productName}</td>
-                <td>${item.quantity}</td>
-                <td>${item.supplier}</td>
-                <td>${item.dateAdded}</td>
-            `;
-            inventoryList.appendChild(row); // Añadir fila a la tabla
-        });
-    }
-
-    // Función para generar un código único para un producto
-    function generateProductCode(productName) {
-        return productName.charAt(0).toUpperCase() + Math.floor(Math.random() * 10000);
-    }
-
-    // Validación para campos vacíos
-    function isFieldEmpty(value) {
-        return value.trim() === ""; // Verifica si el campo está vacío o contiene solo espacios
-    }
-
-    // Función para manejar el registro de compras
-    const addPurchaseButton = document.getElementById("add-purchase-btn");
-    addPurchaseButton.addEventListener("click", function() {
-        const productName = document.getElementById("purchase-product-name").value;
-        const productQuantity = parseInt(document.getElementById("purchase-product-quantity").value);
-        const supplier = document.getElementById("purchase-product-supplier").value;
-        const purchaseCost = document.getElementById("purchase-cost").value;
-
-        // Validar si los campos están vacíos
-        if (isFieldEmpty(productName) || isFieldEmpty(supplier) || isNaN(productQuantity) || isFieldEmpty(purchaseCost)) {
-            alert("Por favor, complete todos los campos correctamente.");
-            return;
-        }
-
-        // Generar código de producto y obtener la fecha actual
-        const productCode = generateProductCode(productName);
-        const purchaseDate = new Date().toLocaleDateString();
-
-        // Obtener compras actuales de localStorage o inicializar un array vacío
-        const purchases = JSON.parse(localStorage.getItem("purchases")) || [];
-        purchases.push({ productCode, productName, productQuantity, supplier, purchaseDate, purchaseCost });
-        localStorage.setItem("purchases", JSON.stringify(purchases)); // Guardar en localStorage
-
-        // Actualizar el inventario
-        let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
-        const productIndex = inventory.findIndex(item => item.productName === productName);
-
-        if (productIndex >= 0) {
-            // Si el producto ya existe, sumar la cantidad
-            inventory[productIndex].quantity += productQuantity;
-        } else {
-            // Si es un nuevo producto, agregarlo al inventario
-            inventory.push({ productCode, productName, quantity: productQuantity, supplier, dateAdded: purchaseDate });
-        }
-
-        localStorage.setItem("inventory", JSON.stringify(inventory)); // Guardar el inventario actualizado
-
-        // Actualizar las tablas de inventario y compras
-        renderInventory();
-        renderPurchases();
-        checkLowStock(); // Verificar si hay productos con stock bajo
-
-        // Limpiar los campos del formulario después de registrar la compra
-        document.getElementById("purchase-product-name").value = '';
-        document.getElementById("purchase-product-quantity").value = '';
-        document.getElementById("purchase-product-supplier").value = '';
-        document.getElementById("purchase-cost").value = '';
+    compras.forEach(compra => {
+        tablaCompras += `<tr>
+            <td>${compra.id}</td>
+            <td>${compra.producto}</td>
+            <td>${compra.cantidad}</td>
+            <td>${compra.proveedor}</td>
+            <td>${compra.fecha}</td>
+            <td>${compra.lote}</td>
+        </tr>`;
     });
 
-    // Función para mostrar el historial de compras
-    function renderPurchases() {
-        const purchaseList = document.getElementById("purchase-list");
-        purchaseList.innerHTML = ""; // Limpiar lista actual
+    document.getElementById('purchase-list').innerHTML = tablaCompras;
+}
 
-        const purchases = JSON.parse(localStorage.getItem("purchases")) || [];
-        purchases.forEach(purchase => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${purchase.productCode}</td>
-                <td>${purchase.productName}</td>
-                <td>${purchase.productQuantity}</td>
-                <td>${purchase.supplier}</td>
-                <td>${purchase.purchaseDate}</td>
-                <td>${purchase.purchaseCost}</td>
-            `;
-            purchaseList.appendChild(row); // Agregar fila a la tabla
-        });
-    }
+// Función para consultar y mostrar las ventas en la tabla de ventas
+function consultarVentas() {
+    const ventas = cargarDatosDeLocalStorage('ventas.json');
+    let tablaVentas = '';
 
-    // Función para manejar el registro de ventas
-    const addSalesButton = document.getElementById("add-sales-btn");
-    addSalesButton.addEventListener("click", function() {
-        const productName = document.getElementById("sales-product-name").value;
-        const productQuantity = parseInt(document.getElementById("sales-product-quantity").value);
-        const customer = document.getElementById("sales-customer").value;
-        const salesTotal = document.getElementById("sales-total").value;
-
-        // Validar campos vacíos
-        if (isFieldEmpty(productName) || isNaN(productQuantity) || isFieldEmpty(customer) || isFieldEmpty(salesTotal)) {
-            alert("Por favor, complete todos los campos correctamente.");
-            return;
-        }
-
-        let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
-        const productIndex = inventory.findIndex(item => item.productName === productName);
-
-        if (productIndex >= 0) {
-            if (inventory[productIndex].quantity >= productQuantity) {
-                inventory[productIndex].quantity -= productQuantity; // Reducir cantidad en inventario
-                if (inventory[productIndex].quantity === 0) {
-                    inventory.splice(productIndex, 1); // Eliminar producto si la cantidad es 0
-                }
-
-                // Registrar la venta
-                const sales = JSON.parse(localStorage.getItem("sales")) || [];
-                const salesDate = new Date().toLocaleDateString(); // Fecha actual
-                sales.push({ productName, productQuantity, customer, salesDate, salesTotal });
-                localStorage.setItem("sales", JSON.stringify(sales)); // Guardar ventas en localStorage
-                localStorage.setItem("inventory", JSON.stringify(inventory)); // Guardar inventario actualizado
-                renderSales();
-                renderInventory();
-                checkLowStock(); // Verificar si hay productos con stock bajo
-            } else {
-                alert("Cantidad insuficiente en el inventario para la venta.");
-            }
-        } else {
-            alert("El producto no existe en el inventario.");
-        }
+    ventas.forEach(venta => {
+        tablaVentas += `<tr>
+            <td>${venta.id}</td>
+            <td>${venta.producto}</td>
+            <td>${venta.cantidad}</td>
+            <td>${venta.fecha}</td>
+            <td>${venta.total}</td>
+        </tr>`;
     });
 
-    // Función para mostrar el historial de ventas
-    function renderSales() {
-        const salesList = document.getElementById("sales-list");
-        salesList.innerHTML = ""; // Limpiar lista actual
+    document.getElementById('sales-list').innerHTML = tablaVentas;
+}
 
-        const sales = JSON.parse(localStorage.getItem("sales")) || [];
-        sales.forEach(sale => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${sale.productName}</td>
-                <td>${sale.productQuantity}</td>
-                <td>${sale.customer}</td>
-                <td>${sale.salesDate}</td>
-                <td>${sale.salesTotal}</td>
-            `;
-            salesList.appendChild(row); // Agregar fila a la tabla
-        });
-    }
+// Función para consultar los reportes de compras y ventas y mostrarlos en la sección de reportes
+function consultarReportes() {
+    // Reportes de compras
+    const compras = cargarDatosDeLocalStorage('compras.json');
+    let tablaReportesCompras = '';
 
-    // Función para manejar el registro de proveedores
-    const addSupplierButton = document.getElementById("add-supplier-btn");
-    addSupplierButton.addEventListener("click", function() {
-        const supplierCode = document.getElementById("supplier-code").value;
-        const supplierType = document.getElementById("supplier-type").value;
-        const supplierName = document.getElementById("supplier-name").value;
-        const supplierPhone = document.getElementById("supplier-phone").value;
-        const supplierAddress = document.getElementById("supplier-address").value;
-        const supplierStatus = document.getElementById("supplier-status").value;
-
-        // Validar campos vacíos
-        if (isFieldEmpty(supplierCode) || isFieldEmpty(supplierName) || isFieldEmpty(supplierPhone)) {
-            alert("Por favor, complete todos los campos correctamente.");
-            return;
-        }
-
-        const suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
-        const supplierIndex = suppliers.findIndex(supplier => supplier.supplierCode === supplierCode);
-
-        if (supplierIndex >= 0) {
-            suppliers[supplierIndex] = { supplierCode, supplierType, supplierName, supplierPhone, supplierAddress, supplierStatus };
-        } else {
-            suppliers.push({ supplierCode, supplierType, supplierName, supplierPhone, supplierAddress, supplierStatus });
-        }
-
-        localStorage.setItem("suppliers", JSON.stringify(suppliers)); // Guardar proveedores en localStorage
-        renderSuppliers();
+    compras.forEach(compra => {
+        tablaReportesCompras += `<tr>
+            <td>${compra.id}</td>
+            <td>${compra.producto}</td>
+            <td>${compra.cantidad}</td>
+            <td>${compra.proveedor}</td>
+            <td>${compra.fecha}</td>
+            <td>${compra.precio * compra.cantidad}</td> <!-- Total calculado -->
+        </tr>`;
     });
 
-    function renderSuppliers() {
-        const supplierList = document.getElementById("supplier-list");
-        supplierList.innerHTML = ""; // Limpiar lista actual
-    
-        const suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
-        suppliers.forEach((supplier, index) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${supplier.supplierCode}</td>
-                <td>${supplier.supplierType}</td>
-                <td>${supplier.supplierName}</td>
-                <td>${supplier.supplierPhone}</td>
-                <td>${supplier.supplierAddress}</td>
-                <td>${supplier.supplierStatus}</td>
-                <td><button class="delete-btn" data-index="${index}">Eliminar</button></td> <!-- Botón de eliminar -->
-            `;
-            supplierList.appendChild(row); // Agregar fila a la tabla
-        });
-    
-        // Agregar evento de eliminación a cada botón de eliminar
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const index = this.getAttribute('data-index');
-                deleteSupplier(index);
+    document.getElementById('report-compras-list').innerHTML = tablaReportesCompras;
+
+    // Reportes de ventas
+    const ventas = cargarDatosDeLocalStorage('ventas.json');
+    let tablaReportesVentas = '';
+
+    ventas.forEach(venta => {
+        tablaReportesVentas += `<tr>
+            <td>${venta.id}</td>
+            <td>${venta.producto}</td>
+            <td>${venta.cantidad}</td>
+            <td>${venta.fecha}</td>
+            <td>${venta.total}</td>
+        </tr>`;
+    });
+
+    document.getElementById('report-ventas-list').innerHTML = tablaReportesVentas;
+}
+
+// Función para registrar un proveedor
+function registrarProveedor(event) {
+    event.preventDefault();
+
+    const id = generarCodigoProveedor();
+    const nombre = document.getElementById('supplier-name').value;
+    const direccion = document.getElementById('supplier-address').value;
+    const ciudad = document.getElementById('supplier-city').value;
+    const telefono = document.getElementById('supplier-phone').value;
+    const estado = document.getElementById('supplier-status').value;
+
+    const nuevoProveedor = { id, nombre, direccion, ciudad, telefono, estado };
+
+    const proveedores = cargarDatosDeLocalStorage('proveedores.json');
+
+    // Verificar si ya existe un proveedor con el mismo nombre
+    const proveedorExistente = proveedores.find(p => p.nombre === nombre);
+    if (proveedorExistente) {
+        alert('Ya existe un proveedor con ese nombre');
+        return;
+    }
+
+    proveedores.push(nuevoProveedor);
+    guardarDatosEnLocalStorage('proveedores.json', proveedores);
+
+    consultarProveedores();
+    alert('Proveedor registrado con éxito');
+}
+
+// Función para generar automáticamente el código de proveedor
+function generarCodigoProveedor() {
+    const fecha = new Date();
+    return 'P' + fecha.getFullYear().toString().slice(-2) +
+           ('0' + (fecha.getMonth() + 1)).slice(-2) +
+           ('0' + fecha.getDate()).slice(-2) +
+           '-' + Math.floor(1000 + Math.random() * 9000);
+}
+
+// Función para consultar y mostrar los proveedores en la tabla de proveedores
+function consultarProveedores() {
+    const proveedores = cargarDatosDeLocalStorage('proveedores.json');
+    let tablaProveedores = '';
+
+    proveedores.forEach(proveedor => {
+        tablaProveedores += `<tr>
+            <td>${proveedor.id}</td>
+            <td>${proveedor.nombre}</td>
+            <td>${proveedor.direccion}</td>
+            <td>${proveedor.ciudad}</td>
+            <td>${proveedor.telefono}</td>
+            <td>${proveedor.estado}</td>
+        </tr>`;
+    });
+
+    document.getElementById('supplier-list').innerHTML = tablaProveedores;
+
+    // Cargar proveedores en el select de compras
+    const proveedorSelect = document.getElementById('purchase-provider');
+    proveedorSelect.innerHTML = '<option value="">Seleccione un Proveedor</option>'; // Resetear las opciones
+    proveedores.forEach(proveedor => {
+        const option = document.createElement('option');
+        option.value = proveedor.nombre;
+        option.textContent = proveedor.nombre;
+        proveedorSelect.appendChild(option);
+    });
+}
+
+// Función para mostrar las notificaciones
+function mostrarNotificaciones() {
+    const productos = cargarDatosDeLocalStorage('productos.json');
+    const notificacionesList = document.getElementById('notificaciones-list');
+    notificacionesList.innerHTML = ''; // Limpiar las notificaciones previas
+
+    productos.forEach(producto => {
+        const fechaIngreso = new Date(producto.fechaIngreso);
+        const fechaActual = new Date();
+        const diferenciaDias = Math.floor((fechaActual - fechaIngreso) / (1000 * 60 * 60 * 24));
+
+        // Notificar si el producto está a punto de caducar (por ejemplo, después de 7 días)
+        if (diferenciaDias >= 6) {
+            const notificacion = document.createElement('li');
+            notificacion.textContent = `El producto "${producto.nombre}" está a punto de caducar.`;
+            const marcarRealizada = document.createElement('button');
+            marcarRealizada.textContent = 'Marcar como realizada';
+            marcarRealizada.addEventListener('click', () => {
+                notificacionesList.removeChild(notificacion); // Eliminar la notificación al marcarla
             });
-        });
-    }
-
-    function deleteSupplier(index) {
-        let suppliers = JSON.parse(localStorage.getItem("suppliers")) || [];
-        suppliers.splice(index, 1); // Elimina el proveedor del array
-        localStorage.setItem("suppliers", JSON.stringify(suppliers)); // Actualiza localStorage
-        renderSuppliers(); // Actualiza la lista de proveedores
-    }
-
-    // Función para verificar si hay productos con bajo stock
-    function checkLowStock() {
-        const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
-        const lowStockProducts = inventory.filter(item => item.quantity < 10);
-
-        const lowStockMessage = document.getElementById("low-stock-message");
-        if (lowStockProducts.length > 0) {
-            let message = "Atención: Los siguientes productos tienen bajo stock:<br><ul>";
-            lowStockProducts.forEach(item => {
-                message += `<li>${item.productName} (Stock: ${item.quantity})</li>`;
-            });
-            message += "</ul>";
-            lowStockMessage.innerHTML = message;
-            lowStockMessage.style.display = "block"; // Mostrar mensaje de bajo stock
-        } else {
-            lowStockMessage.style.display = "none"; // Ocultar si no hay productos con bajo stock
+            notificacion.appendChild(marcarRealizada);
+            notificacionesList.appendChild(notificacion);
         }
-    }
 
-    // Verificar si estamos en la página de inventario y cargar la información
-    if (window.location.pathname.endsWith("inventory.html")) {
-        renderInventory();
-        renderPurchases();
-        renderSales();
-        renderSuppliers();
-        checkLowStock(); // Verificar productos con bajo stock al cargar la página
+        // Notificar si el stock es menor de 10
+        if (producto.stock < 10) {
+            const notificacionBajoStock = document.createElement('li');
+            notificacionBajoStock.textContent = `El producto "${producto.nombre}" tiene un stock bajo (${producto.stock} unidades).`;
+            const marcarRealizada = document.createElement('button');
+            marcarRealizada.textContent = 'Marcar como realizada';
+            marcarRealizada.addEventListener('click', () => {
+                notificacionesList.removeChild(notificacionBajoStock); // Eliminar la notificación al marcarla
+            });
+            notificacionBajoStock.appendChild(marcarRealizada);
+            notificacionesList.appendChild(notificacionBajoStock);
+        }
+    });
+}
+
+// Función para mostrar una sección y ocultar las demás
+function mostrarSeccion(seccionId) {
+    const secciones = document.querySelectorAll('.table-section');
+    secciones.forEach(seccion => seccion.style.display = 'none');
+    const seccionMostrada = document.getElementById(seccionId);
+    if (seccionMostrada) {
+        seccionMostrada.style.display = 'block';
     }
-});
+}
+
+// Función para inicializar la navegación entre las secciones
+function inicializarNavegacion() {
+    document.getElementById('inicio-btn').addEventListener('click', () => mostrarSeccion('inicio-section'));
+    document.getElementById('inventario-btn').addEventListener('click', () => mostrarSeccion('inventario-section'));
+    document.getElementById('purchase-btn').addEventListener('click', () => mostrarSeccion('purchase-section'));
+    document.getElementById('sales-btn').addEventListener('click', () => mostrarSeccion('sales-section'));
+    document.getElementById('proveedor-btn').addEventListener('click', () => mostrarSeccion('proveedor-section'));
+    document.getElementById('reportes-btn').addEventListener('click', () => {
+        mostrarSeccion('reportes-section');
+        consultarReportes();
+    });
+}
+
+// Inicializar la página cuando se carga
+window.onload = function() {
+    verificarAutenticacion();
+    inicializarNavegacion();
+
+    consultarInventario();
+    consultarCompras();
+    consultarVentas();
+    consultarProveedores();
+    mostrarNotificaciones(); // Mostrar notificaciones
+
+    // Manejar los formularios de compra, venta y proveedor
+    document.getElementById('purchase-form').addEventListener('submit', registrarCompra);
+    document.getElementById('sales-form').addEventListener('submit', registrarVenta);
+    document.getElementById('supplier-form').addEventListener('submit', registrarProveedor);
+};
