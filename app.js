@@ -1,12 +1,22 @@
-// Función para guardar datos en LocalStorage (simulando un archivo JSON)
-function guardarDatosEnLocalStorage(clave, datos) {
-    localStorage.setItem(clave, JSON.stringify(datos));
+// Función para cargar datos desde un archivo JSON estático
+async function cargarDatosDesdeArchivo(ruta) {
+    try {
+        const response = await fetch(ruta);
+        if (!response.ok) {
+            throw new Error(`Error al cargar ${ruta}: ${response.statusText}`);
+        }
+        const datos = await response.json();
+        return datos;
+    } catch (error) {
+        console.error('Error al cargar datos:', error);
+        return [];
+    }
 }
 
-// Función para cargar datos desde LocalStorage (simulando la lectura de un archivo JSON)
-function cargarDatosDeLocalStorage(clave) {
-    const datos = localStorage.getItem(clave);
-    return datos ? JSON.parse(datos) : [];
+// Función para guardar datos en archivos JSON simulados (esto no es posible directamente desde JavaScript del lado del cliente)
+function guardarDatosSimulados(clave, datos) {
+    console.log(`Datos que se guardarían en ${clave}:`, datos);
+    alert('No se puede guardar directamente en archivos JSON desde el cliente.');
 }
 
 // Función para verificar si el usuario está autenticado
@@ -36,7 +46,7 @@ function generarNumeroDeLote() {
 }
 
 // Función para registrar una compra y actualizar el inventario
-function registrarCompra(event) {
+async function registrarCompra(event) {
     event.preventDefault();
 
     const productoNombre = document.getElementById('purchase-product-name').value;
@@ -57,13 +67,13 @@ function registrarCompra(event) {
         fecha: fechaCompra
     };
 
-    // Guardar compra en "compras.json"
-    const compras = cargarDatosDeLocalStorage('compras.json');
+    // Cargar datos de compras.json
+    const compras = await cargarDatosDesdeArchivo('compras.json');
     compras.push(nuevaCompra);
-    guardarDatosEnLocalStorage('compras.json', compras);
+    guardarDatosSimulados('compras.json', compras);
 
     // Actualizar el inventario con la nueva compra
-    const productos = cargarDatosDeLocalStorage('productos.json');
+    const productos = await cargarDatosDesdeArchivo('productos.json');
     const productoExistente = productos.find(p => p.nombre === productoNombre);
 
     if (productoExistente) {
@@ -83,7 +93,7 @@ function registrarCompra(event) {
     }
 
     // Guardar el inventario actualizado
-    guardarDatosEnLocalStorage('productos.json', productos);
+    guardarDatosSimulados('productos.json', productos);
 
     consultarInventario(); // Actualizar la tabla del inventario
     consultarCompras(); // Actualizar la tabla de compras
@@ -92,14 +102,14 @@ function registrarCompra(event) {
 }
 
 // Función para registrar una venta y actualizar el inventario
-function registrarVenta(event) {
+async function registrarVenta(event) {
     event.preventDefault();
 
     const productoId = parseInt(document.getElementById('sales-product-id').value, 10);
     const cantidadVendida = parseInt(document.getElementById('sales-quantity').value, 10);
     const fecha = new Date().toISOString().split('T')[0];
 
-    const productos = cargarDatosDeLocalStorage('productos.json');
+    const productos = await cargarDatosDesdeArchivo('productos.json');
     const producto = productos.find(p => p.id === productoId);
 
     if (producto && producto.stock >= cantidadVendida) {
@@ -115,11 +125,11 @@ function registrarVenta(event) {
 
         producto.stock -= cantidadVendida;
 
-        let ventas = cargarDatosDeLocalStorage('ventas.json');
+        let ventas = await cargarDatosDesdeArchivo('ventas.json');
         ventas.push(nuevaVenta);
-        guardarDatosEnLocalStorage('ventas.json', ventas);
+        guardarDatosSimulados('ventas.json', ventas);
 
-        guardarDatosEnLocalStorage('productos.json', productos); // Actualizar el stock en productos
+        guardarDatosSimulados('productos.json', productos); // Actualizar el stock en productos
 
         alert('Venta registrada con éxito');
         consultarVentas(); // Actualizar la tabla de ventas
@@ -131,8 +141,8 @@ function registrarVenta(event) {
 }
 
 // Función para consultar y mostrar el inventario en la tabla
-function consultarInventario() {
-    const productos = cargarDatosDeLocalStorage('productos.json');
+async function consultarInventario() {
+    const productos = await cargarDatosDesdeArchivo('productos.json');
     let tablaInventario = '';
 
     productos.forEach(producto => {
@@ -150,8 +160,8 @@ function consultarInventario() {
 }
 
 // Función para consultar y mostrar las compras en la tabla de compras
-function consultarCompras() {
-    const compras = cargarDatosDeLocalStorage('compras.json');
+async function consultarCompras() {
+    const compras = await cargarDatosDesdeArchivo('compras.json');
     let tablaCompras = '';
 
     compras.forEach(compra => {
@@ -169,8 +179,8 @@ function consultarCompras() {
 }
 
 // Función para consultar y mostrar las ventas en la tabla de ventas
-function consultarVentas() {
-    const ventas = cargarDatosDeLocalStorage('ventas.json');
+async function consultarVentas() {
+    const ventas = await cargarDatosDesdeArchivo('ventas.json');
     let tablaVentas = '';
 
     ventas.forEach(venta => {
@@ -187,9 +197,9 @@ function consultarVentas() {
 }
 
 // Función para consultar los reportes de compras y ventas y mostrarlos en la sección de reportes
-function consultarReportes() {
+async function consultarReportes() {
     // Reportes de compras
-    const compras = cargarDatosDeLocalStorage('compras.json');
+    const compras = await cargarDatosDesdeArchivo('compras.json');
     let tablaReportesCompras = '';
 
     compras.forEach(compra => {
@@ -206,7 +216,7 @@ function consultarReportes() {
     document.getElementById('report-compras-list').innerHTML = tablaReportesCompras;
 
     // Reportes de ventas
-    const ventas = cargarDatosDeLocalStorage('ventas.json');
+    const ventas = await cargarDatosDesdeArchivo('ventas.json');
     let tablaReportesVentas = '';
 
     ventas.forEach(venta => {
@@ -223,7 +233,7 @@ function consultarReportes() {
 }
 
 // Función para registrar un proveedor
-function registrarProveedor(event) {
+async function registrarProveedor(event) {
     event.preventDefault();
 
     const id = generarCodigoProveedor();
@@ -235,7 +245,7 @@ function registrarProveedor(event) {
 
     const nuevoProveedor = { id, nombre, direccion, ciudad, telefono, estado };
 
-    const proveedores = cargarDatosDeLocalStorage('proveedores.json');
+    const proveedores = await cargarDatosDesdeArchivo('proveedores.json');
 
     // Verificar si ya existe un proveedor con el mismo nombre
     const proveedorExistente = proveedores.find(p => p.nombre === nombre);
@@ -245,7 +255,7 @@ function registrarProveedor(event) {
     }
 
     proveedores.push(nuevoProveedor);
-    guardarDatosEnLocalStorage('proveedores.json', proveedores);
+    guardarDatosSimulados('proveedores.json', proveedores);
 
     consultarProveedores();
     alert('Proveedor registrado con éxito');
@@ -261,8 +271,8 @@ function generarCodigoProveedor() {
 }
 
 // Función para consultar y mostrar los proveedores en la tabla de proveedores
-function consultarProveedores() {
-    const proveedores = cargarDatosDeLocalStorage('proveedores.json');
+async function consultarProveedores() {
+    const proveedores = await cargarDatosDesdeArchivo('proveedores.json');
     let tablaProveedores = '';
 
     proveedores.forEach(proveedor => {
@@ -290,8 +300,8 @@ function consultarProveedores() {
 }
 
 // Función para mostrar las notificaciones
-function mostrarNotificaciones() {
-    const productos = cargarDatosDeLocalStorage('productos.json');
+async function mostrarNotificaciones() {
+    const productos = await cargarDatosDesdeArchivo('productos.json');
     const notificacionesList = document.getElementById('notificaciones-list');
     notificacionesList.innerHTML = ''; // Limpiar las notificaciones previas
 
