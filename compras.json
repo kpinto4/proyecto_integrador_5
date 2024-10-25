@@ -1,4 +1,0 @@
-[
-    { "id": 1, "producto": "Arroz", "cantidad": 20, "proveedor": "Proveedor A", "fecha": "2024-10-15", "costo": 200 },
-    { "id": 2, "producto": "Frijol", "cantidad": 15, "proveedor": "Proveedor B", "fecha": "2024-10-14", "costo": 150 }
-]

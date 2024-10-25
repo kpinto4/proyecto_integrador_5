@@ -1,4 +1,0 @@
-[
-    { "id": 1, "producto": "Arroz", "cantidad": 5, "cliente": "Cliente A", "fecha": "2024-10-18", "total": 100 },
-    { "id": 2, "producto": "Frijol", "cantidad": 3, "cliente": "Cliente B", "fecha": "2024-10-17", "total": 60 }
-]
