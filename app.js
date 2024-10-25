@@ -1,22 +1,35 @@
-// Función para cargar datos desde un archivo JSON estático
-async function cargarDatosDesdeArchivo(ruta) {
+// URL base del servidor JSON
+const BASE_URL = 'http://localhost:3000';
+
+// Función para cargar datos desde la API de json-server
+async function cargarDatosDesdeAPI(seccion) {
     try {
-        const response = await fetch(ruta);
+        const response = await fetch(`${BASE_URL}/${seccion}`);
         if (!response.ok) {
-            throw new Error(`Error al cargar ${ruta}: ${response.statusText}`);
+            throw new Error(`Error al cargar ${seccion}: ${response.statusText}`);
         }
-        const datos = await response.json();
-        return datos;
+        return await response.json();
     } catch (error) {
         console.error('Error al cargar datos:', error);
         return [];
     }
 }
 
-// Función para guardar datos en archivos JSON simulados (esto no es posible directamente desde JavaScript del lado del cliente)
-function guardarDatosSimulados(clave, datos) {
-    console.log(`Datos que se guardarían en ${clave}:`, datos);
-    alert('No se puede guardar directamente en archivos JSON desde el cliente.');
+// Función para enviar datos a la API (CRUD)
+async function enviarDatosAPI(endpoint, metodo, data) {
+    try {
+        const response = await fetch(`${BASE_URL}/${endpoint}`, {
+            method: metodo,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error(`Error en la operación con ${endpoint}`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error en enviarDatosAPI:', error);
+    }
 }
 
 // Función para verificar si el usuario está autenticado
@@ -38,11 +51,10 @@ function cerrarSesion() {
 // Función para generar un número de lote automático
 function generarNumeroDeLote() {
     const fecha = new Date();
-    const lote = 'L' + fecha.getFullYear().toString().slice(-2) +
-                 ('0' + (fecha.getMonth() + 1)).slice(-2) +
-                 ('0' + fecha.getDate()).slice(-2) +
-                 '-' + Math.floor(1000 + Math.random() * 9000);
-    return lote;
+    return 'L' + fecha.getFullYear().toString().slice(-2) +
+        ('0' + (fecha.getMonth() + 1)).slice(-2) +
+        ('0' + fecha.getDate()).slice(-2) +
+        '-' + Math.floor(1000 + Math.random() * 9000);
 }
 
 // Función para registrar una compra y actualizar el inventario
@@ -56,9 +68,7 @@ async function registrarCompra(event) {
     const proveedorSeleccionado = document.getElementById('purchase-provider').value;
     const lote = generarNumeroDeLote();
 
-    // Nueva compra
     const nuevaCompra = {
-        id: Date.now(),
         producto: productoNombre,
         lote: lote,
         precio: precioUnitario,
@@ -67,37 +77,27 @@ async function registrarCompra(event) {
         fecha: fechaCompra
     };
 
-    // Cargar datos de compras.json
-    const compras = await cargarDatosDesdeArchivo('compras.json');
-    compras.push(nuevaCompra);
-    guardarDatosSimulados('compras.json', compras);
+    await enviarDatosAPI('compras', 'POST', nuevaCompra);
 
-    // Actualizar el inventario con la nueva compra
-    const productos = await cargarDatosDesdeArchivo('productos.json');
+    const productos = await cargarDatosDesdeAPI('productos');
     const productoExistente = productos.find(p => p.nombre === productoNombre);
 
     if (productoExistente) {
-        // Si el producto ya existe, solo actualizamos el stock
         productoExistente.stock += cantidadComprada;
+        await enviarDatosAPI(`productos/${productoExistente.id}`, 'PUT', productoExistente);
     } else {
-        // Si es un producto nuevo, lo agregamos al inventario
         const nuevoProducto = {
-            id: Date.now(),
             nombre: productoNombre,
             lote: lote,
             precio: precioUnitario,
             stock: cantidadComprada,
             fechaIngreso: fechaCompra
         };
-        productos.push(nuevoProducto);
+        await enviarDatosAPI('productos', 'POST', nuevoProducto);
     }
 
-    // Guardar el inventario actualizado
-    guardarDatosSimulados('productos.json', productos);
-
-    consultarInventario(); // Actualizar la tabla del inventario
-    consultarCompras(); // Actualizar la tabla de compras
-    consultarReportes(); // Actualizar los reportes
+    consultarInventario();
+    consultarCompras();
     alert(`Compra registrada con éxito. Lote asignado: ${lote}`);
 }
 
@@ -109,40 +109,76 @@ async function registrarVenta(event) {
     const cantidadVendida = parseInt(document.getElementById('sales-quantity').value, 10);
     const fecha = new Date().toISOString().split('T')[0];
 
-    const productos = await cargarDatosDesdeArchivo('productos.json');
+    if (isNaN(productoId) || isNaN(cantidadVendida) || cantidadVendida <= 0) {
+        alert("Por favor, ingresa datos válidos para el ID del producto y la cantidad.");
+        return;
+    }
+
+    const productos = await cargarDatosDesdeAPI('productos');
     const producto = productos.find(p => p.id === productoId);
 
-    if (producto && producto.stock >= cantidadVendida) {
-        const totalVenta = producto.precio * cantidadVendida;
-
-        const nuevaVenta = {
-            id: Date.now(),
-            producto: producto.nombre,
-            cantidad: cantidadVendida,
-            fecha: fecha,
-            total: totalVenta
-        };
-
-        producto.stock -= cantidadVendida;
-
-        let ventas = await cargarDatosDesdeArchivo('ventas.json');
-        ventas.push(nuevaVenta);
-        guardarDatosSimulados('ventas.json', ventas);
-
-        guardarDatosSimulados('productos.json', productos); // Actualizar el stock en productos
-
-        alert('Venta registrada con éxito');
-        consultarVentas(); // Actualizar la tabla de ventas
-        consultarInventario(); // Actualizar la tabla del inventario
-        consultarReportes(); // Actualizar los reportes
-    } else {
-        alert('Stock insuficiente o producto no encontrado');
+    if (!producto) {
+        alert('Producto no encontrado.');
+        return;
     }
+
+    if (producto.stock < cantidadVendida) {
+        alert('Stock insuficiente para realizar la venta.');
+        return;
+    }
+
+    const totalVenta = producto.precio * cantidadVendida;
+    const nuevaVenta = {
+        producto: producto.nombre,
+        cantidad: cantidadVendida,
+        fecha: fecha,
+        total: totalVenta
+    };
+
+    producto.stock -= cantidadVendida;
+    await enviarDatosAPI('ventas', 'POST', nuevaVenta);
+    await enviarDatosAPI(`productos/${producto.id}`, 'PUT', producto);
+
+    alert('Venta registrada con éxito');
+    consultarVentas();
+    consultarInventario();
+}
+
+// Función para registrar un proveedor y actualizar la tabla de proveedores
+async function registrarProveedor(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById('supplier-name').value;
+    const direccion = document.getElementById('supplier-address').value;
+    const ciudad = document.getElementById('supplier-city').value;
+    const telefono = document.getElementById('supplier-phone').value;
+    const estado = document.getElementById('supplier-status').value;
+
+    if (!nombre || !direccion || !ciudad || !telefono || !estado) {
+        alert("Por favor completa todos los campos");
+        return;
+    }
+
+    const nuevoProveedor = { nombre, direccion, ciudad, telefono, estado };
+
+    const proveedores = await cargarDatosDesdeAPI('proveedores');
+    const proveedorExistente = proveedores.find(p => p.nombre === nombre);
+    if (proveedorExistente) {
+        alert('Ya existe un proveedor con ese nombre');
+        return;
+    }
+
+    await enviarDatosAPI('proveedores', 'POST', nuevoProveedor);
+
+    consultarProveedores();
+    alert('Proveedor registrado con éxito');
+
+    document.getElementById('supplier-form').reset();
 }
 
 // Función para consultar y mostrar el inventario en la tabla
 async function consultarInventario() {
-    const productos = await cargarDatosDesdeArchivo('productos.json');
+    const productos = await cargarDatosDesdeAPI('productos');
     let tablaInventario = '';
 
     productos.forEach(producto => {
@@ -161,7 +197,7 @@ async function consultarInventario() {
 
 // Función para consultar y mostrar las compras en la tabla de compras
 async function consultarCompras() {
-    const compras = await cargarDatosDesdeArchivo('compras.json');
+    const compras = await cargarDatosDesdeAPI('compras');
     let tablaCompras = '';
 
     compras.forEach(compra => {
@@ -180,7 +216,7 @@ async function consultarCompras() {
 
 // Función para consultar y mostrar las ventas en la tabla de ventas
 async function consultarVentas() {
-    const ventas = await cargarDatosDesdeArchivo('ventas.json');
+    const ventas = await cargarDatosDesdeAPI('ventas');
     let tablaVentas = '';
 
     ventas.forEach(venta => {
@@ -196,83 +232,43 @@ async function consultarVentas() {
     document.getElementById('sales-list').innerHTML = tablaVentas;
 }
 
-// Función para consultar los reportes de compras y ventas y mostrarlos en la sección de reportes
+// Función para consultar y mostrar los reportes de compras y ventas
 async function consultarReportes() {
-    // Reportes de compras
-    const compras = await cargarDatosDesdeArchivo('compras.json');
-    let tablaReportesCompras = '';
+    const compras = await cargarDatosDesdeAPI('compras');
+    const ventas = await cargarDatosDesdeAPI('ventas');
 
+    // Tabla de reportes de compras
+    let tablaReportesCompras = '';
     compras.forEach(compra => {
+        const totalCompra = compra.cantidad * compra.precio;
         tablaReportesCompras += `<tr>
             <td>${compra.id}</td>
             <td>${compra.producto}</td>
             <td>${compra.cantidad}</td>
             <td>${compra.proveedor}</td>
             <td>${compra.fecha}</td>
-            <td>${compra.precio * compra.cantidad}</td> <!-- Total calculado -->
+            <td>${totalCompra.toFixed(2)}</td>
         </tr>`;
     });
-
     document.getElementById('report-compras-list').innerHTML = tablaReportesCompras;
 
-    // Reportes de ventas
-    const ventas = await cargarDatosDesdeArchivo('ventas.json');
+    // Tabla de reportes de ventas
     let tablaReportesVentas = '';
-
     ventas.forEach(venta => {
         tablaReportesVentas += `<tr>
             <td>${venta.id}</td>
             <td>${venta.producto}</td>
             <td>${venta.cantidad}</td>
             <td>${venta.fecha}</td>
-            <td>${venta.total}</td>
+            <td>${venta.total.toFixed(2)}</td>
         </tr>`;
     });
-
     document.getElementById('report-ventas-list').innerHTML = tablaReportesVentas;
-}
-
-// Función para registrar un proveedor
-async function registrarProveedor(event) {
-    event.preventDefault();
-
-    const id = generarCodigoProveedor();
-    const nombre = document.getElementById('supplier-name').value;
-    const direccion = document.getElementById('supplier-address').value;
-    const ciudad = document.getElementById('supplier-city').value;
-    const telefono = document.getElementById('supplier-phone').value;
-    const estado = document.getElementById('supplier-status').value;
-
-    const nuevoProveedor = { id, nombre, direccion, ciudad, telefono, estado };
-
-    const proveedores = await cargarDatosDesdeArchivo('proveedores.json');
-
-    // Verificar si ya existe un proveedor con el mismo nombre
-    const proveedorExistente = proveedores.find(p => p.nombre === nombre);
-    if (proveedorExistente) {
-        alert('Ya existe un proveedor con ese nombre');
-        return;
-    }
-
-    proveedores.push(nuevoProveedor);
-    guardarDatosSimulados('proveedores.json', proveedores);
-
-    consultarProveedores();
-    alert('Proveedor registrado con éxito');
-}
-
-// Función para generar automáticamente el código de proveedor
-function generarCodigoProveedor() {
-    const fecha = new Date();
-    return 'P' + fecha.getFullYear().toString().slice(-2) +
-           ('0' + (fecha.getMonth() + 1)).slice(-2) +
-           ('0' + fecha.getDate()).slice(-2) +
-           '-' + Math.floor(1000 + Math.random() * 9000);
 }
 
 // Función para consultar y mostrar los proveedores en la tabla de proveedores
 async function consultarProveedores() {
-    const proveedores = await cargarDatosDesdeArchivo('proveedores.json');
+    const proveedores = await cargarDatosDesdeAPI('proveedores');
     let tablaProveedores = '';
 
     proveedores.forEach(proveedor => {
@@ -288,9 +284,8 @@ async function consultarProveedores() {
 
     document.getElementById('supplier-list').innerHTML = tablaProveedores;
 
-    // Cargar proveedores en el select de compras
     const proveedorSelect = document.getElementById('purchase-provider');
-    proveedorSelect.innerHTML = '<option value="">Seleccione un Proveedor</option>'; // Resetear las opciones
+    proveedorSelect.innerHTML = '<option value="">Seleccione un Proveedor</option>';
     proveedores.forEach(proveedor => {
         const option = document.createElement('option');
         option.value = proveedor.nombre;
@@ -301,36 +296,34 @@ async function consultarProveedores() {
 
 // Función para mostrar las notificaciones
 async function mostrarNotificaciones() {
-    const productos = await cargarDatosDesdeArchivo('productos.json');
+    const productos = await cargarDatosDesdeAPI('productos');
     const notificacionesList = document.getElementById('notificaciones-list');
-    notificacionesList.innerHTML = ''; // Limpiar las notificaciones previas
+    notificacionesList.innerHTML = '';
 
     productos.forEach(producto => {
         const fechaIngreso = new Date(producto.fechaIngreso);
         const fechaActual = new Date();
         const diferenciaDias = Math.floor((fechaActual - fechaIngreso) / (1000 * 60 * 60 * 24));
 
-        // Notificar si el producto está a punto de caducar (por ejemplo, después de 7 días)
         if (diferenciaDias >= 6) {
             const notificacion = document.createElement('li');
             notificacion.textContent = `El producto "${producto.nombre}" está a punto de caducar.`;
             const marcarRealizada = document.createElement('button');
             marcarRealizada.textContent = 'Marcar como realizada';
             marcarRealizada.addEventListener('click', () => {
-                notificacionesList.removeChild(notificacion); // Eliminar la notificación al marcarla
+                notificacionesList.removeChild(notificacion);
             });
             notificacion.appendChild(marcarRealizada);
             notificacionesList.appendChild(notificacion);
         }
 
-        // Notificar si el stock es menor de 10
         if (producto.stock < 10) {
             const notificacionBajoStock = document.createElement('li');
             notificacionBajoStock.textContent = `El producto "${producto.nombre}" tiene un stock bajo (${producto.stock} unidades).`;
             const marcarRealizada = document.createElement('button');
             marcarRealizada.textContent = 'Marcar como realizada';
             marcarRealizada.addEventListener('click', () => {
-                notificacionesList.removeChild(notificacionBajoStock); // Eliminar la notificación al marcarla
+                notificacionesList.removeChild(notificacionBajoStock);
             });
             notificacionBajoStock.appendChild(marcarRealizada);
             notificacionesList.appendChild(notificacionBajoStock);
@@ -370,9 +363,8 @@ window.onload = function() {
     consultarCompras();
     consultarVentas();
     consultarProveedores();
-    mostrarNotificaciones(); // Mostrar notificaciones
+    mostrarNotificaciones();
 
-    // Manejar los formularios de compra, venta y proveedor
     document.getElementById('purchase-form').addEventListener('submit', registrarCompra);
     document.getElementById('sales-form').addEventListener('submit', registrarVenta);
     document.getElementById('supplier-form').addEventListener('submit', registrarProveedor);

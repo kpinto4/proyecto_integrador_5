@@ -1,0 +1,127 @@
+{
+  "productos": [
+    {
+      "id": 1,
+      "nombre": "fresa",
+      "lote": "L241019-3471",
+      "precio": 1,
+      "stock": 50,
+      "fechaIngreso": "2024-10-20"
+    },
+    {
+      "id": 2,
+      "nombre": "mango",
+      "lote": "L241019-9104",
+      "precio": 5000,
+      "stock": 30,
+      "fechaIngreso": "2024-10-20"
+    },
+    {
+      "id": "02ff",
+      "nombre": "1",
+      "lote": "L241025-1721",
+      "precio": 1,
+      "stock": 1,
+      "fechaIngreso": "2024-10-25"
+    },
+    {
+      "id": "4256",
+      "nombre": "5",
+      "lote": "L241025-1439",
+      "precio": 5,
+      "stock": 5,
+      "fechaIngreso": "2024-10-25"
+    }
+  ],
+  "compras": [
+    {
+      "id": 1,
+      "producto": "Arroz",
+      "cantidad": 20,
+      "proveedor": "Proveedor A",
+      "fecha": "2024-10-15",
+      "lote": "L241015-1234"
+    },
+    {
+      "id": 2,
+      "producto": "Frijol",
+      "cantidad": 15,
+      "proveedor": "Proveedor B",
+      "fecha": "2024-10-14",
+      "lote": "L241014-5678"
+    },
+    {
+      "id": "7925",
+      "producto": "1",
+      "lote": "L241025-1721",
+      "precio": 1,
+      "cantidad": 1,
+      "proveedor": "Proveedor A",
+      "fecha": "2024-10-25"
+    },
+    {
+      "id": "9964",
+      "producto": "5",
+      "lote": "L241025-1439",
+      "precio": 5,
+      "cantidad": 5,
+      "proveedor": "Proveedor B",
+      "fecha": "2024-10-25"
+    }
+  ],
+  "ventas": [
+    {
+      "id": 1,
+      "producto": "fresa",
+      "cantidad": 10,
+      "fecha": "2024-10-25",
+      "total": 10
+    },
+    {
+      "id": "4861",
+      "producto": "fresa",
+      "cantidad": 1,
+      "fecha": "2024-10-25",
+      "total": 1
+    },
+    {
+      "id": "8604",
+      "producto": "mango",
+      "cantidad": 1,
+      "fecha": "2024-10-25",
+      "total": 5000
+    },
+    {
+      "id": "1310",
+      "producto": "fresa",
+      "cantidad": 10,
+      "fecha": "2024-10-25",
+      "total": 10
+    },
+    {
+      "id": "49f3",
+      "producto": "fresa",
+      "cantidad": 3,
+      "fecha": "2024-10-25",
+      "total": 3
+    }
+  ],
+  "proveedores": [
+    {
+      "id": 1,
+      "nombre": "Proveedor A",
+      "direccion": "Calle 123",
+      "ciudad": "Ciudad X",
+      "telefono": "555-1234",
+      "estado": "Activo"
+    },
+    {
+      "id": 2,
+      "nombre": "Proveedor B",
+      "direccion": "Calle 456",
+      "ciudad": "Ciudad Y",
+      "telefono": "555-5678",
+      "estado": "Activo"
+    }
+  ]
+}
