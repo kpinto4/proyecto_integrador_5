@@ -31,6 +31,14 @@
       "precio": 5,
       "stock": 5,
       "fechaIngreso": "2024-10-25"
+    },
+    {
+      "id": "0aff",
+      "nombre": "3",
+      "lote": "L241025-7269",
+      "precio": 3,
+      "stock": 3,
+      "fechaIngreso": "2024-10-26"
     }
   ],
   "compras": [
@@ -67,6 +75,15 @@
       "cantidad": 5,
       "proveedor": "Proveedor B",
       "fecha": "2024-10-25"
+    },
+    {
+      "id": "a01a",
+      "producto": "3",
+      "lote": "L241025-7269",
+      "precio": 3,
+      "cantidad": 3,
+      "proveedor": "2",
+      "fecha": "2024-10-26"
     }
   ],
   "ventas": [
@@ -104,6 +121,13 @@
       "cantidad": 3,
       "fecha": "2024-10-25",
       "total": 3
+    },
+    {
+      "id": "2b12",
+      "producto": "mango",
+      "cantidad": 5,
+      "fecha": "2024-10-26",
+      "total": 25000
     }
   ],
   "proveedores": [
@@ -121,6 +145,14 @@
       "direccion": "Calle 456",
       "ciudad": "Ciudad Y",
       "telefono": "555-5678",
+      "estado": "Activo"
+    },
+    {
+      "id": "55ca",
+      "nombre": "2",
+      "direccion": "2",
+      "ciudad": "2",
+      "telefono": "2",
       "estado": "Activo"
     }
   ]

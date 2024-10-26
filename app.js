@@ -176,6 +176,55 @@ async function registrarProveedor(event) {
     document.getElementById('supplier-form').reset();
 }
 
+// Función para registrar o editar un producto
+async function guardarCambiosProducto(event) {
+    event.preventDefault();
+
+    const productoId = document.getElementById('product-select').value;
+    const nuevoNombre = document.getElementById('product-name').value;
+    const nuevoPrecio = parseFloat(document.getElementById('product-price').value);
+
+    if (!productoId || !nuevoNombre || isNaN(nuevoPrecio) || nuevoPrecio <= 0) {
+        alert("Por favor, completa todos los campos correctamente.");
+        return;
+    }
+
+    const productoActualizado = {
+        nombre: nuevoNombre,
+        precio: nuevoPrecio
+    };
+
+    await enviarDatosAPI(`productos/${productoId}`, 'PUT', productoActualizado);
+
+    alert("Producto actualizado con éxito.");
+    consultarInventario(); // Actualizar lista de inventario
+    cargarProductosEnFormulario(); // Actualizar formulario de productos
+}
+
+// Cargar lista de productos en el formulario para seleccionar y editar
+async function cargarProductosEnFormulario() {
+    const productos = await cargarDatosDesdeAPI('productos');
+    const productSelect = document.getElementById('product-select');
+    productSelect.innerHTML = '<option value="">Selecciona un Producto</option>';
+
+    productos.forEach(producto => {
+        const option = document.createElement('option');
+        option.value = producto.id;
+        option.textContent = producto.nombre;
+        productSelect.appendChild(option);
+    });
+}
+
+// Mostrar detalles del producto seleccionado en el formulario de edición
+async function mostrarProductoParaEditar(event) {
+    const productoId = event.target.value;
+    if (!productoId) return;
+
+    const producto = await cargarDatosDesdeAPI(`productos/${productoId}`);
+    document.getElementById('product-name').value = producto.nombre;
+    document.getElementById('product-price').value = producto.precio;
+}
+
 // Función para consultar y mostrar el inventario en la tabla
 async function consultarInventario() {
     const productos = await cargarDatosDesdeAPI('productos');
@@ -237,7 +286,6 @@ async function consultarReportes() {
     const compras = await cargarDatosDesdeAPI('compras');
     const ventas = await cargarDatosDesdeAPI('ventas');
 
-    // Tabla de reportes de compras
     let tablaReportesCompras = '';
     compras.forEach(compra => {
         const totalCompra = compra.cantidad * compra.precio;
@@ -252,7 +300,6 @@ async function consultarReportes() {
     });
     document.getElementById('report-compras-list').innerHTML = tablaReportesCompras;
 
-    // Tabla de reportes de ventas
     let tablaReportesVentas = '';
     ventas.forEach(venta => {
         tablaReportesVentas += `<tr>
@@ -352,6 +399,10 @@ function inicializarNavegacion() {
         mostrarSeccion('reportes-section');
         consultarReportes();
     });
+    document.getElementById('productos-btn').addEventListener('click', () => {
+        mostrarSeccion('productos-section');
+        cargarProductosEnFormulario();
+    });
 }
 
 // Inicializar la página cuando se carga
@@ -368,4 +419,6 @@ window.onload = function() {
     document.getElementById('purchase-form').addEventListener('submit', registrarCompra);
     document.getElementById('sales-form').addEventListener('submit', registrarVenta);
     document.getElementById('supplier-form').addEventListener('submit', registrarProveedor);
+    document.getElementById('product-form').addEventListener('submit', guardarCambiosProducto);
+    document.getElementById('product-select').addEventListener('change', mostrarProductoParaEditar);
 };

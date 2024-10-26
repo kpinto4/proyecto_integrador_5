@@ -10,7 +10,6 @@
     <!-- Menú lateral con opciones de navegación -->
     <div id="sidebar">
         <h2>LA CANASTA</h2>
-        <!-- Información del usuario -->
         <div id="user-info">
             <span id="username-display">Usuario</span>
             <p id="role-display">Rol</p>
@@ -19,12 +18,12 @@
         <div class="menu-buttons">
             <button id="inicio-btn" class="nav-btn">Inicio</button>
             <button id="inventario-btn" class="nav-btn">Inventario</button>
+            <button id="productos-btn" class="nav-btn">Productos</button>
             <button id="proveedor-btn" class="nav-btn">Proveedor</button>
             <button id="reportes-btn" class="nav-btn">Reportes</button>
         </div>
         <button id="purchase-btn" class="nav-btn">Registrar Compra</button>
         <button id="sales-btn" class="nav-btn">Registrar Venta</button>
-        <!-- Botón de cerrar sesión -->
         <button id="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
@@ -34,7 +33,6 @@
         <div id="inicio-section" class="table-section">
             <h1>Bienvenido al Sistema de Inventario</h1>
             <p>Aquí puedes ver las notificaciones más recientes sobre el inventario.</p>
-            <!-- Notificaciones dinámicas -->
             <div id="notificaciones">
                 <h2>Notificaciones</h2>
                 <ul id="notificaciones-list"></ul>
@@ -44,7 +42,6 @@
         <!-- Sección de inventario -->
         <div id="inventario-section" class="table-section" style="display:none;">
             <h1>Inventario</h1>
-            <!-- Campo de búsqueda -->
             <input type="text" id="search-inventory" placeholder="Buscar producto...">
             <h2>Lista de Productos</h2>
             <table>
@@ -71,13 +68,11 @@
                 <input type="text" id="purchase-product-name" placeholder="Nombre del Producto" required>
                 <input type="number" id="purchase-quantity" placeholder="Cantidad" required>
                 <input type="number" id="purchase-price" placeholder="Precio Unitario" required>
-                <!-- Proveedor cargado dinámicamente -->
                 <select id="purchase-provider" required>
                     <option value="">Seleccione un Proveedor</option>
                 </select>
                 <button type="submit">Registrar Compra</button>
             </form>
-            <!-- Lista de compras -->
             <h2>Historial de Compras</h2>
             <table>
                 <thead>
@@ -102,7 +97,6 @@
                 <input type="number" id="sales-quantity" placeholder="Cantidad" required>
                 <button type="submit">Registrar Venta</button>
             </form>
-            <!-- Lista de ventas -->
             <h2>Historial de Ventas</h2>
             <table>
                 <thead>
@@ -122,7 +116,6 @@
         <div id="proveedor-section" class="table-section" style="display:none;">
             <h2>Gestionar Proveedores</h2>
             <form id="supplier-form">
-                <!-- Código generado automáticamente, campo removido -->
                 <input type="text" id="supplier-name" placeholder="Nombre del Proveedor" required>
                 <input type="text" id="supplier-address" placeholder="Dirección" required>
                 <input type="text" id="supplier-city" placeholder="Ciudad" required>
@@ -133,8 +126,6 @@
                 </select>
                 <button type="submit">Agregar/Modificar Proveedor</button>
             </form>
-
-            <!-- Lista de proveedores -->
             <h2>Lista de Proveedores</h2>
             <table>
                 <thead>
@@ -151,10 +142,41 @@
             </table>
         </div>
 
+        <!-- Sección de productos (nueva) -->
+        <div id="productos-section" class="table-section" style="display:none;">
+            <h2>Lista de Productos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Lote</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Fecha de Ingreso</th>
+                    </tr>
+                </thead>
+                <tbody id="productos-list">
+                    <!-- Lista de productos cargada desde la API -->
+                </tbody>
+            </table>
+
+            <h3>Modificar Producto Seleccionado</h3>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <label for="product-name">Nombre:</label>
+                <input type="text" id="product-name" placeholder="Nombre del Producto" required>
+                
+                <label for="product-price">Precio:</label>
+                <input type="number" id="product-price" placeholder="Precio" required>
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+
         <!-- Sección de reportes -->
         <div id="reportes-section" class="table-section" style="display:none;">
             <h2>Reportes Históricos</h2>
-            <p>Aquí se mostrarán los reportes históricos de compras y ventas.</p>
             <h3>Compras</h3>
             <table>
                 <thead>
