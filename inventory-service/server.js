@@ -24,7 +24,7 @@ inventoryDb.connect((err) => {
 });
 
 // Ruta para obtener productos
-app.get('/api/inventario', (req, res) => {
+app.get('/api/productos', (req, res) => {
   const query = 'SELECT * FROM producto'; // Cambia si tu tabla tiene otro nombre
   inventoryDb.query(query, (err, results) => {
     if (err) {
@@ -34,7 +34,20 @@ app.get('/api/inventario', (req, res) => {
   });
 });
 
-// Escucha en el puerto 5002
+// Rutas de gestión de proveedores
+app.get('/api/proveedores', (req, res) => {
+  const query = 'SELECT * FROM proveedor';
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error en la consulta de proveedor:', err);
+      return res.status(500).send(err);
+    }
+    console.log('Resultados:', results);
+    res.json(results);
+  });
+});
+
+// Escucha en el puerto 5003
 app.listen(5003, () => {
   console.log('Servicio de Inventario corriendo en el puerto 5003');
 });

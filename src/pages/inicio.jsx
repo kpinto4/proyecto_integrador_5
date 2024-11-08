@@ -5,10 +5,10 @@ import '../styles/Inventory.css';
 function Inicio() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inicio');
-  const [inventario, setInventario] = useState([]); // Estado para guardar el inventario
-  const [productos, setProductos] = useState([]); // Estado para guardar los productos
-  const [proveedores, setProveedores] = useState([]); // Estado para proveedores
-  const [reportes, setReportes] = useState([]); // Estado para reportes
+  const [inventario, setInventario] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
+  const [reportes, setReportes] = useState([]);
 
   useEffect(() => {
     const usuarioAutenticado = JSON.parse(localStorage.getItem('usuarioAutenticado'));
@@ -44,15 +44,37 @@ function Inicio() {
   };
 
   const cargarProductos = async () => {
-    // Aquí puedes definir la lógica para cargar productos
+    try {
+      const response = await fetch('http://localhost:5003/api/productos');
+      if (!response.ok) throw new Error('Error al cargar los productos');
+      const data = await response.json();
+      console.log('Datos de productos:', data); // Log para verificar los datos recibidos
+      setProductos(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
-
+  
   const cargarProveedores = async () => {
-    // Aquí puedes definir la lógica para cargar proveedores
+    try {
+      const response = await fetch('http://localhost:5003/api/proveedores');
+      if (!response.ok) throw new Error('Error al cargar los proveedores');
+      const data = await response.json();
+      setProveedores(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const cargarReportes = async () => {
-    // Aquí puedes definir la lógica para cargar reportes
+    try {
+      const response = await fetch('http://localhost:5003/api/reportes');
+      if (!response.ok) throw new Error('Error al cargar los reportes');
+      const data = await response.json();
+      setReportes(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -86,12 +108,6 @@ function Inicio() {
         {seccionActiva === 'inventario' && (
           <div id="inventario-section" className="table-section">
             <h1>Inventario</h1>
-          </div>
-        )}
-
-        {seccionActiva === 'productos' && (
-          <div id="productos-section" className="table-section">
-            <h2>Lista de Productos</h2>
             <table>
               <thead>
                 <tr>
@@ -119,10 +135,67 @@ function Inicio() {
           </div>
         )}
 
+        {seccionActiva === 'productos' && (
+          <div id="productos-section" className="table-section">
+            <h2>Lista de Productos</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th>Lote</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos.map((producto) => (
+                  <tr key={producto.cod_producto}>
+                    <td>{producto.cod_producto}</td> 
+                    <td>{producto.nombre}</td>       
+                    <td>{producto.lote}</td>         
+                    <td>{producto.precio}</td>       
+                    <td>{producto.stock}</td>        
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {seccionActiva === 'proveedor' && (
           <div id="proveedor-section" className="table-section">
             <h2>Gestionar Proveedores</h2>
-            {/* Tabla o lista de proveedores */}
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Correo Electrónico</th>
+                    <th>Dirección</th>
+                    <th>Departamento</th>
+                    <th>Ciudad</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {proveedores.map((proveedor) => (
+                    <tr key={proveedor.id_proveedor}>
+                      <td>{proveedor.id_proveedor}</td>
+                      <td>{proveedor.nombre}</td>
+                      <td>{proveedor.correo_electronico}</td>
+                      <td>{proveedor.direccion}</td>
+                      <td>{proveedor.departamento}</td>
+                      <td>{proveedor.ciudad}</td>
+                      <td>{proveedor.telefono}</td>
+                      <td>{proveedor.estado}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

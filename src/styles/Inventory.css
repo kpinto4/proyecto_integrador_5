@@ -159,7 +159,7 @@ button:hover {
 
 /* Ajustar el contenedor principal de la tabla */
 .table-section {
-    width: 80%; /* Ajusta el ancho al 80% de la pantalla */
+    width: 75%; /* Ajusta el ancho al 75% de la pantalla */
     margin: 0; /* Centra el contenido */
     padding: 20px;
     background-color: white;
