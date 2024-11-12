@@ -1,6 +1,10 @@
+// src/App.js
+
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './pages/login';
-import Inicio from './pages/inicio';
+import Login from './pages/login'; // Importación en minúsculas
+import Inicio from './pages/inicio'; // Importación en minúsculas
+import './styles/App.css'; // Ruta corregida para apuntar a styles/App.css
 
 function App() {
   return (
@@ -14,4 +18,3 @@ function App() {
 }
 
 export default App;
-

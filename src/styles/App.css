@@ -1,0 +1,23 @@
+/* Estilos generales para el body */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f4f4;
+}
+
+/* Contenedor principal */
+.inventory {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sección de contenido principal */
+#content-section {
+  margin-left: 270px; /* Asegúrate de que coincida con el ancho del Sidebar */
+  padding: 30px; /* Padding general para un mejor diseño */
+  flex-grow: 1;
+  background-color: #f4f4f4;
+  overflow-y: auto;
+  border-radius: 8px;
+}
