@@ -7,20 +7,25 @@ function Login() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // Credenciales de prueba hardcodeadas
-  const usuarioPrueba = {
-    username: 'admin',
-    password: 'admin123'
-  };
-
-  const handleLogin = () => {
-    // Verifica si los datos ingresados coinciden con los de prueba
-    if (username === usuarioPrueba.username && password === usuarioPrueba.password) {
-      // Guarda el usuario en localStorage para simular la autenticación
-      localStorage.setItem('usuarioAutenticado', JSON.stringify({ username }));
-      navigate('/inicio'); // Redirige a la página de inicio
-    } else {
-      alert('Credenciales incorrectas');
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:5002/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Guarda el usuario en localStorage para la verificación de autenticación
+        localStorage.setItem('usuarioAutenticado', JSON.stringify({ username }));
+        navigate('/inicio'); // Redirige a la página de inicio
+      } else {
+        alert('Credenciales incorrectas');
+      }
+    } catch (error) {
+      console.error('Error en la autenticación:', error);
     }
   };
 

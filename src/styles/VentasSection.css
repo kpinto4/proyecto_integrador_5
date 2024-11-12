@@ -1,0 +1,54 @@
+.ventas-section {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 30px auto;
+  max-width: 1000px;
+}
+
+.ventas-section form {
+  margin-bottom: 20px;
+}
+
+.ventas-section input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.ventas-section button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ventas-section button:hover {
+  background-color: #0056b3;
+}
+
+.ventas-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.ventas-section th,
+.ventas-section td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.ventas-section th {
+  background-color: #f4f4f4;
+}
+
+.ventas-section tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}

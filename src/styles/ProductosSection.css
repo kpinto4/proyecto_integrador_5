@@ -1,0 +1,29 @@
+.productos-section {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 30px auto;
+  max-width: 1000px;
+}
+
+.productos-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.productos-section th,
+.productos-section td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.productos-section th {
+  background-color: #f4f4f4;
+}
+
+.productos-section tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
