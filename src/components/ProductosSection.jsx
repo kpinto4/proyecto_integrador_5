@@ -18,8 +18,8 @@ const ProductosSection = ({ productos }) => {
         </thead>
         <tbody>
           {productos.map((producto) => (
-            <tr key={producto.id_producto}>
-              <td>{producto.id_producto}</td>
+            <tr key={producto.cod_producto}>
+              <td>{producto.cod_producto}</td>
               <td>{producto.nombre}</td>
               <td>{producto.lote}</td>
               <td>{producto.precio}</td>
