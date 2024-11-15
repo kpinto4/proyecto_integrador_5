@@ -6,3 +6,16 @@
   margin: 30px auto;
   max-width: 1000px;
 }
+
+.alertas-container {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #ffefc5;
+  border: 1px solid #ffcc00;
+  border-radius: 5px;
+}
+
+.alerta {
+  color: #856404;
+  margin-bottom: 5px;
+}

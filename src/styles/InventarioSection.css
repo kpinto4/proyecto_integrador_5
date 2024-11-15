@@ -1,3 +1,4 @@
+/* Contenedor principal de la sección de inventario */
 .inventario-section {
   padding: 20px;
   background-color: #ffffff;
@@ -7,12 +8,14 @@
   max-width: 1000px;
 }
 
+/* Estilos para la tabla de inventario */
 .inventario-section table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
 }
 
+/* Estilos para las celdas de la tabla (encabezados y datos) */
 .inventario-section th,
 .inventario-section td {
   border: 1px solid #ddd;
@@ -20,18 +23,32 @@
   text-align: left;
 }
 
+/* Estilos específicos para los encabezados de la tabla */
 .inventario-section th {
   background-color: #f4f4f4;
+  color: #333;
 }
 
+/* Colorear las filas pares de la tabla para mejorar la legibilidad */
 .inventario-section tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
+/* Estilos para el campo de búsqueda */
 #search-inventory {
   width: calc(100% - 20px);
   padding: 10px;
   margin-bottom: 20px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* Estilo para el texto de las filas vacías */
+.no-data {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 10px;
 }

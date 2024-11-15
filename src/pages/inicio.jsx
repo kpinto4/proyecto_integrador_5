@@ -7,6 +7,7 @@ import ProveedorSection from '../components/ProveedorSection';
 import ReportesSection from '../components/ReportesSection';
 import ComprasSection from '../components/ComprasSection';
 import VentasSection from '../components/VentasSection';
+import Usuarios from '../components/Usuarios'; // Importa el componente Usuarios
 import '../styles/App.css'; // Estilos globales
 import '../styles/InicioSection.css'; // Estilos específicos de la sección de inicio
 
@@ -100,6 +101,7 @@ function Inicio() {
         {seccionActiva === 'reportes' && <ReportesSection reportes={reportes} />}
         {seccionActiva === 'compras' && <ComprasSection />}
         {seccionActiva === 'ventas' && <VentasSection />}
+        {seccionActiva === 'usuarios' && <Usuarios />} {/* Nueva sección de Usuarios */}
       </div>
     </div>
   );
