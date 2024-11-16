@@ -23,14 +23,74 @@ inventoryDb.connect((err) => {
   console.log('Conexión exitosa a la base de datos de inventario');
 });
 
-// Ruta para obtener productos
+// Obtener todos los productos
 app.get('/api/productos', (req, res) => {
-  const query = 'SELECT * FROM producto'; // Cambia si tu tabla tiene otro nombre
+  const query = 'SELECT cod_producto AS id, nombre, precio FROM producto';
   inventoryDb.query(query, (err, results) => {
     if (err) {
+      console.error('Error al obtener productos:', err);
       return res.status(500).send(err);
     }
     res.json(results);
+  });
+});
+
+// Insertar un nuevo producto
+app.post('/api/productos', (req, res) => {
+  const { nombre, precio } = req.body;
+
+  if (!nombre || !precio) {
+    return res.status(400).json({ message: 'El nombre y el precio son obligatorios.' });
+  }
+
+  const query = 'INSERT INTO producto (nombre, precio) VALUES (?, ?)';
+  inventoryDb.query(query, [nombre, precio], (err, results) => {
+    if (err) {
+      console.error('Error al insertar producto:', err);
+      return res.status(500).send(err);
+    }
+
+    res.json({ id: results.insertId, nombre, precio });
+  });
+});
+
+// Actualizar un producto existente
+app.put('/api/productos/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, precio } = req.body;
+
+  if (!nombre || !precio) {
+    return res.status(400).json({ message: 'El nombre y el precio son obligatorios.' });
+  }
+
+  const query = 'UPDATE producto SET nombre = ?, precio = ? WHERE cod_producto = ?';
+  inventoryDb.query(query, [nombre, precio, id], (err, results) => {
+    if (err) {
+      console.error('Error al actualizar producto:', err);
+      return res.status(500).send(err);
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado.' });
+    }
+
+    res.json({ id, nombre, precio });
+  });
+});
+
+// Eliminar un producto
+app.delete('/api/productos/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM producto WHERE cod_producto = ?';
+  inventoryDb.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error al eliminar producto:', err);
+      return res.status(500).send(err);
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    res.json({ message: 'Producto eliminado correctamente', id });
   });
 });
 

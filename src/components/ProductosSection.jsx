@@ -1,172 +1,162 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/ProductosSection.css';
+import axios from 'axios';
+import '../styles/ProductosSection.css'; // Importa los estilos
 
 const ProductosSection = () => {
-  // Estado para manejar la lista de productos y los campos del formulario
   const [productos, setProductos] = useState([]);
-  const [nombre, setNombre] = useState('');
-  const [valorUnitario, setValorUnitario] = useState('');
-  const [editIndex, setEditIndex] = useState(null);
-  const [editProducto, setEditProducto] = useState(null);
+  const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '' });
+  const [editando, setEditando] = useState(false);
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
-  // Obtener productos del backend al cargar el componente
+  // Cargar productos desde el servidor
   useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const response = await axios.get('http://localhost:5003/api/productos');
+        setProductos(response.data);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      }
+    };
+
     fetchProductos();
   }, []);
 
-  // Función para obtener productos desde el backend
-  const fetchProductos = () => {
-    fetch('http://localhost:5003/api/productos') // Asegúrate de que esta URL es la correcta
-      .then((response) => response.json())
-      .then((data) => setProductos(data))
-      .catch((error) => console.error('Error al obtener productos:', error));
+  // Manejar cambios en los campos del formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoProducto({ ...nuevoProducto, [name]: value });
   };
 
-  // Función para agregar un nuevo producto
-  const agregarProducto = () => {
-    if (nombre && valorUnitario) {
-      const nuevoProducto = {
-        nombre,
-        valor_unitario: parseFloat(valorUnitario),
-      };
+  // Agregar un nuevo producto
+  const agregarProducto = async () => {
+    try {
+      if (!nuevoProducto.nombre || !nuevoProducto.precio) {
+        alert('Por favor, llena todos los campos.');
+        return;
+      }
 
-      fetch('http://localhost:5003/api/productos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevoProducto),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert('Producto agregado exitosamente');
-            fetchProductos(); // Actualizar la lista de productos
-            limpiarFormulario();
-          } else {
-            alert('Error al agregar producto');
-          }
-        })
-        .catch((error) => console.error('Error al agregar producto:', error));
+      const response = await axios.post('http://localhost:5003/api/productos', nuevoProducto);
+
+      // Agregar el nuevo producto al estado actual
+      setProductos([...productos, response.data]);
+
+      // Limpiar el formulario
+      setNuevoProducto({ nombre: '', precio: '' });
+
+      alert('Producto agregado exitosamente.');
+    } catch (error) {
+      console.error('Error al agregar producto:', error);
+      alert('Hubo un error al agregar el producto. Intenta de nuevo.');
     }
   };
 
-  // Función para actualizar un producto existente
-  const actualizarProducto = () => {
-    if (editProducto && nombre && valorUnitario) {
-      const productoActualizado = {
-        nombre,
-        valor_unitario: parseFloat(valorUnitario),
-      };
+  // Iniciar la edición de un producto
+  const iniciarEdicion = (producto) => {
+    setEditando(true);
+    setProductoSeleccionado(producto);
+    setNuevoProducto({ nombre: producto.nombre, precio: producto.precio });
+  };
 
-      fetch(`http://localhost:5003/api/productos/${editProducto.cod_producto}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productoActualizado),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert('Producto actualizado exitosamente');
-            fetchProductos(); // Actualizar la lista de productos
-            limpiarFormulario();
-          } else {
-            alert('Error al actualizar producto');
-          }
-        })
-        .catch((error) => console.error('Error al actualizar producto:', error));
+  // Guardar cambios en un producto existente
+  const guardarEdicion = async () => {
+    try {
+      if (!nuevoProducto.nombre || !nuevoProducto.precio) {
+        alert('Por favor, llena todos los campos.');
+        return;
+      }
+
+      const response = await axios.put(
+        `http://localhost:5003/api/productos/${productoSeleccionado.id}`,
+        nuevoProducto
+      );
+
+      // Actualizar la lista de productos en el estado
+      setProductos(productos.map((prod) =>
+        prod.id === productoSeleccionado.id ? response.data : prod
+      ));
+
+      // Limpiar el estado y salir del modo de edición
+      setEditando(false);
+      setProductoSeleccionado(null);
+      setNuevoProducto({ nombre: '', precio: '' });
+
+      alert('Producto actualizado exitosamente.');
+    } catch (error) {
+      console.error('Error al actualizar producto:', error);
+      alert('Hubo un error al actualizar el producto. Intenta de nuevo.');
     }
   };
 
-  // Función para eliminar un producto
-  const eliminarProducto = (productoId) => {
-    fetch(`http://localhost:5003/api/productos/${productoId}`, {
-      method: 'DELETE',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert('Producto eliminado exitosamente');
-          fetchProductos(); // Actualizar la lista de productos
-        } else {
-          alert('Error al eliminar producto');
-        }
-      })
-      .catch((error) => console.error('Error al eliminar producto:', error));
-  };
-
-  // Función para limpiar el formulario
-  const limpiarFormulario = () => {
-    setNombre('');
-    setValorUnitario('');
-    setEditIndex(null);
-    setEditProducto(null);
-  };
-
-  // Función para cargar los datos de un producto en el formulario para editar
-  const editarProducto = (producto) => {
-    setEditProducto(producto);
-    setNombre(producto.nombre);
-    setValorUnitario(producto.valor_unitario);
-    setEditIndex(producto.id);
+  // Eliminar un producto
+  const eliminarProducto = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5003/api/productos/${id}`);
+      setProductos(productos.filter((producto) => producto.id !== id));
+      alert('Producto eliminado exitosamente.');
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      alert('Hubo un error al eliminar el producto. Intenta de nuevo.');
+    }
   };
 
   return (
-    <div className="section-container productos-section">
-      <h2>Gestión de Productos</h2>
+    <div className="section-container">
+      <h1>Gestión de Productos</h1>
 
-      {/* Formulario para agregar o actualizar productos */}
       <div className="formulario-producto">
         <input
           type="text"
           placeholder="Nombre del Producto"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          name="nombre"
+          value={nuevoProducto.nombre}
+          onChange={handleInputChange}
           className="input-producto"
         />
         <input
           type="number"
-          placeholder="Valor Unitario"
-          value={valorUnitario}
-          onChange={(e) => setValorUnitario(e.target.value)}
+          placeholder="Precio"
+          name="precio"
+          value={nuevoProducto.precio}
+          onChange={handleInputChange}
           className="input-producto"
         />
-        {editIndex !== null ? (
-          <button onClick={actualizarProducto} className="btn-accion actualizar">
-            Actualizar
-          </button>
-        ) : (
+        {!editando ? (
           <button onClick={agregarProducto} className="btn-accion agregar">
             Agregar Producto
           </button>
+        ) : (
+          <>
+            <button onClick={guardarEdicion} className="btn-accion actualizar">
+              Guardar Cambios
+            </button>
+            <button onClick={() => setEditando(false)} className="btn-accion cancelar">
+              Cancelar
+            </button>
+          </>
         )}
-        <button onClick={limpiarFormulario} className="btn-accion cancelar">
-          Cancelar
-        </button>
       </div>
 
-      {/* Tabla de productos */}
       <table className="tabla-productos">
         <thead>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Valor Unitario</th>
+            <th>Precio</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {productos.map((producto) => (
-            <tr key={producto.cod_producto}>
-              <td>{producto.cod_producto}</td>
+            <tr key={producto.id}>
+              <td>{producto.id}</td>
               <td>{producto.nombre}</td>
-              <td>{producto.valor_unitario}</td>
+              <td>{producto.precio}</td>
               <td>
-                <button onClick={() => editarProducto(producto)} className="btn-accion editar">
+                <button onClick={() => iniciarEdicion(producto)} className="btn-accion editar">
                   Editar
                 </button>
-                <button
-                  onClick={() => eliminarProducto(producto.cod_producto)}
-                  className="btn-accion eliminar"
-                >
+                <button onClick={() => eliminarProducto(producto.id)} className="btn-accion eliminar">
                   Eliminar
                 </button>
               </td>
