@@ -187,6 +187,19 @@ app.delete('/api/proveedores/:id', (req, res) => {
   });
 });
 
+// Obtener todos los productos con datos de inventario
+app.get('/api/inventario', (req, res) => {
+  const query = 'SELECT * FROM producto'; // Ajusta la consulta según lo necesario
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener datos del inventario:', err);
+      return res.status(500).send(err);
+    }
+    res.json(results); // Devuelve todos los datos obtenidos
+  });
+});
+
+
 // Escucha en el puerto 5003
 app.listen(5003, () => {
   console.log('Servicio de Inventario corriendo en el puerto 5003');

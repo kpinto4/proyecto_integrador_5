@@ -43,6 +43,7 @@
   border: 1px solid #ccc;
   display: block;
   box-sizing: border-box;
+  font-size: 16px;
 }
 
 /* Estilo para el texto de las filas vacías */

@@ -1,44 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/InventarioSection.css';
 
 const InventarioSection = () => {
-  const [inventario, setInventario] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
+  const [productos, setProductos] = useState([]); // Todos los productos
+  const [filtro, setFiltro] = useState(''); // Texto ingresado en la barra de búsqueda
 
-  // Obtener el inventario desde el backend cuando el componente se monta
+  // Obtener productos desde el backend
   useEffect(() => {
-    fetchInventario();
+    const fetchProductos = async () => {
+      try {
+        const response = await axios.get('http://localhost:5003/api/inventario');
+        setProductos(response.data);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      }
+    };
+
+    fetchProductos();
   }, []);
 
-  const fetchInventario = () => {
-    fetch('http://localhost:5003/api/productos') // URL para obtener productos desde el backend
-      .then((response) => response.json())
-      .then((data) => setInventario(data))
-      .catch((error) => console.error('Error al obtener productos:', error));
-  };
-
-  // Función para manejar el cambio en el campo de búsqueda
-  const manejarCambioBusqueda = (e) => {
-    setBusqueda(e.target.value.toLowerCase());
-  };
-
-  // Filtrar el inventario por nombre de producto según la búsqueda
-  const inventarioFiltrado = inventario.filter((producto) =>
-    producto.nombre.toLowerCase().includes(busqueda)
+  // Filtrar productos en tiempo real
+  const productosFiltrados = productos.filter((producto) =>
+    producto.nombre.toLowerCase().includes(filtro.toLowerCase())
   );
 
   return (
-    <div className="section-container inventario-section">
-      <h2>Inventario</h2>
+    <div className="inventario-section">
+      <h1>Inventario</h1>
       <input
+        id="search-inventory"
         type="text"
         placeholder="Buscar producto por nombre..."
-        id="search-inventory"
-        value={busqueda}
-        onChange={manejarCambioBusqueda}
-        className="input-busqueda"
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)} // Actualiza el filtro en tiempo real
       />
-      <table className="tabla-inventario">
+      <table>
         <thead>
           <tr>
             <th>Código</th>
@@ -50,22 +47,20 @@ const InventarioSection = () => {
           </tr>
         </thead>
         <tbody>
-          {inventarioFiltrado.length > 0 ? (
-            inventarioFiltrado.map((producto) => (
+          {productosFiltrados.length > 0 ? (
+            productosFiltrados.map((producto) => (
               <tr key={producto.cod_producto}>
                 <td>{producto.cod_producto}</td>
                 <td>{producto.nombre}</td>
                 <td>{producto.lote}</td>
                 <td>{producto.precio}</td>
                 <td>{producto.stock}</td>
-                <td>{producto.fecha_ingreso}</td>
+                <td>{new Date(producto.fecha_ingreso).toLocaleDateString()}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="no-data">
-                No se encontraron productos.
-              </td>
+              <td colSpan="6" className="no-data">No se encontraron productos</td>
             </tr>
           )}
         </tbody>
