@@ -1,206 +1,211 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/ProveedorSection.css';
 
 const ProveedorSection = () => {
   const [proveedores, setProveedores] = useState([]);
-  const [proveedorEditable, setProveedorEditable] = useState(null);
-  const [nombre, setNombre] = useState('');
-  const [direccion, setDireccion] = useState('');
-  const [ciudad, setCiudad] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [estado, setEstado] = useState('activo');
-  const [codigo, setCodigo] = useState(''); // Para almacenar el id_proveedor
-  const [correoElectronico, setCorreoElectronico] = useState('');
-  const [departamento, setDepartamento] = useState('');
+  const [nuevoProveedor, setNuevoProveedor] = useState({
+    nombre: '',
+    direccion: '',
+    ciudad: '',
+    telefono: '',
+    correo_electronico: '',
+    departamento: '',
+    estado: 'Activo',
+  });
+  const [editando, setEditando] = useState(false);
+  const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
 
-  // Al cargar el componente, obtener la lista de proveedores
+  // Obtener proveedores al cargar la página
   useEffect(() => {
+    const fetchProveedores = async () => {
+      try {
+        const response = await axios.get('http://localhost:5003/api/proveedores');
+        setProveedores(response.data);
+      } catch (error) {
+        console.error('Error al cargar proveedores:', error);
+      }
+    };
+
     fetchProveedores();
   }, []);
 
-  // Función para obtener proveedores desde el servidor
-  const fetchProveedores = () => {
-    fetch('http://localhost:5003/api/proveedores')
-      .then((response) => response.json())
-      .then((data) => setProveedores(data))
-      .catch((error) => console.error('Error al obtener proveedores:', error));
+  // Manejar cambios en el formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoProveedor({ ...nuevoProveedor, [name]: value });
   };
 
-  // Función para limpiar el formulario
-  const resetForm = () => {
-    setNombre('');
-    setDireccion('');
-    setCiudad('');
-    setTelefono('');
-    setEstado('activo');
-    setCodigo('');
-    setCorreoElectronico('');
-    setDepartamento('');
-    setProveedorEditable(null);
+  // Agregar un nuevo proveedor
+  const agregarProveedor = async () => {
+    try {
+      if (!nuevoProveedor.nombre || !nuevoProveedor.direccion || !nuevoProveedor.ciudad || !nuevoProveedor.telefono) {
+        alert('Por favor, completa todos los campos obligatorios.');
+        return;
+      }
+
+      const response = await axios.post('http://localhost:5003/api/proveedores', nuevoProveedor);
+
+      setProveedores([...proveedores, response.data]); // Actualizar la lista
+      setNuevoProveedor({
+        nombre: '',
+        direccion: '',
+        ciudad: '',
+        telefono: '',
+        correo_electronico: '',
+        departamento: '',
+        estado: 'Activo',
+      });
+      alert('Proveedor agregado exitosamente.');
+    } catch (error) {
+      console.error('Error al agregar proveedor:', error.response || error.message);
+      alert('Hubo un error al agregar el proveedor.');
+    }
   };
 
-  // Función para guardar (agregar o actualizar) un proveedor
-  const handleSave = () => {
-    const method = proveedorEditable ? 'PUT' : 'POST';
-    const url = proveedorEditable
-      ? `http://localhost:5003/api/proveedores/${codigo}`
-      : 'http://localhost:5003/api/proveedores';
-
-    // Agregar console.log para depurar
-    console.log('Enviando solicitud a:', url); // Muestra la URL
-    console.log('Método:', method); // Muestra el método (POST o PUT)
-    console.log('Datos enviados:', { 
-      nombre, 
-      direccion, 
-      ciudad, 
-      telefono, 
-      estado, 
-      correo_electronico: correoElectronico, 
-      departamento 
-    }); // Muestra los datos
-
-    fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre,
-        direccion,
-        ciudad,
-        telefono,
-        estado,
-        correo_electronico: correoElectronico,
-        departamento,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Respuesta del servidor:', data); // Muestra la respuesta
-        if (data.success) {
-          alert(`Proveedor ${proveedorEditable ? 'actualizado' : 'agregado'} exitosamente`);
-          fetchProveedores(); // Actualizar la lista de proveedores
-          resetForm();
-        } else {
-          alert('Error al guardar proveedor');
-        }
-      })
-      .catch((error) => console.error('Error:', error));
+  // Iniciar edición de un proveedor
+  const iniciarEdicion = (proveedor) => {
+    setEditando(true);
+    setProveedorSeleccionado(proveedor);
+    setNuevoProveedor({ ...proveedor });
   };
 
-  // Función para manejar la edición de un proveedor
-  const handleEdit = (proveedor) => {
-    setProveedorEditable(proveedor);
-    setCodigo(proveedor.id_proveedor);
-    setNombre(proveedor.nombre);
-    setDireccion(proveedor.direccion);
-    setCiudad(proveedor.ciudad);
-    setTelefono(proveedor.telefono);
-    setEstado(proveedor.estado);
+  // Guardar los cambios de un proveedor
+  const guardarEdicion = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5003/api/proveedores/${proveedorSeleccionado.id_proveedor}`,
+        nuevoProveedor
+      );
+
+      setProveedores(
+        proveedores.map((prov) =>
+          prov.id_proveedor === proveedorSeleccionado.id_proveedor ? response.data : prov
+        )
+      );
+
+      setEditando(false);
+      setProveedorSeleccionado(null);
+      setNuevoProveedor({
+        nombre: '',
+        direccion: '',
+        ciudad: '',
+        telefono: '',
+        correo_electronico: '',
+        departamento: '',
+        estado: 'Activo',
+      });
+
+      alert('Proveedor actualizado exitosamente.');
+    } catch (error) {
+      console.error('Error al actualizar proveedor:', error.response || error.message);
+      alert('Hubo un error al actualizar el proveedor.');
+    }
   };
 
-  // Función para eliminar un proveedor
-  const handleDelete = (id_proveedor) => {
-    fetch(`http://localhost:5003/api/proveedores/${id_proveedor}`, {
-      method: 'DELETE',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert('Proveedor eliminado exitosamente');
-          fetchProveedores(); // Actualizar la lista de proveedores
-        } else {
-          alert('Error al eliminar proveedor');
-        }
-      })
-      .catch((error) => console.error('Error al eliminar proveedor:', error));
+  // Eliminar un proveedor
+  const eliminarProveedor = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5003/api/proveedores/${id}`);
+
+      setProveedores(proveedores.filter((prov) => prov.id_proveedor !== id));
+      alert('Proveedor eliminado exitosamente.');
+    } catch (error) {
+      console.error('Error al eliminar proveedor:', error.response || error.message);
+      alert('Hubo un error al eliminar el proveedor.');
+    }
   };
 
   return (
-    <div className="section-container proveedor-section">
-      <h2>Gestionar Proveedores</h2>
-      <form>
-        {proveedorEditable && (
+    <div className="section-container">
+      <div className="proveedor-section">
+        <h1>Gestionar Proveedores</h1>
+        <form>
           <input
             type="text"
-            placeholder="Código del Proveedor"
-            value={codigo}
-            readOnly
+            placeholder="Nombre del Proveedor"
+            name="nombre"
+            value={nuevoProveedor.nombre}
+            onChange={handleInputChange}
           />
-        )}
-        <input
-          type="text"
-          placeholder="Nombre del Proveedor"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Dirección"
-          value={direccion}
-          onChange={(e) => setDireccion(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Ciudad"
-          value={ciudad}
-          onChange={(e) => setCiudad(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Teléfono"
-          value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder="Correo Electrónico"
-          value={correoElectronico}
-          onChange={(e) => setCorreoElectronico(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Departamento"
-          value={departamento}
-          onChange={(e) => setDepartamento(e.target.value)}
-        />
-        <select value={estado} onChange={(e) => setEstado(e.target.value)}>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-        </select>
-        <button type="button" onClick={handleSave}>
-          {proveedorEditable ? 'Actualizar' : 'Agregar'} Proveedor
-        </button>
-      </form>
-
-      <h3>Lista de Proveedores</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Dirección</th>
-            <th>Ciudad</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {proveedores.map((proveedor) => (
-            <tr key={proveedor.id_proveedor}>
-              <td>{proveedor.id_proveedor}</td>
-              <td>{proveedor.nombre}</td>
-              <td>{proveedor.direccion}</td>
-              <td>{proveedor.ciudad}</td>
-              <td>{proveedor.telefono}</td>
-              <td>{proveedor.estado}</td>
-              <td className="acciones">
-                <button onClick={() => handleEdit(proveedor)}>Editar</button>
-                <button onClick={() => handleDelete(proveedor.id_proveedor)}>Eliminar</button>
-              </td>
+          <input
+            type="text"
+            placeholder="Dirección"
+            name="direccion"
+            value={nuevoProveedor.direccion}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Ciudad"
+            name="ciudad"
+            value={nuevoProveedor.ciudad}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Teléfono"
+            name="telefono"
+            value={nuevoProveedor.telefono}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Correo Electrónico"
+            name="correo_electronico"
+            value={nuevoProveedor.correo_electronico}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Departamento"
+            name="departamento"
+            value={nuevoProveedor.departamento}
+            onChange={handleInputChange}
+          />
+          <select name="estado" value={nuevoProveedor.estado} onChange={handleInputChange}>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+          {!editando ? (
+            <button type="button" onClick={agregarProveedor}>Agregar Proveedor</button>
+          ) : (
+            <>
+              <button type="button" onClick={guardarEdicion}>Guardar Cambios</button>
+              <button type="button" onClick={() => setEditando(false)}>Cancelar</button>
+            </>
+          )}
+        </form>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Ciudad</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {proveedores.map((proveedor) => (
+              <tr key={proveedor.id_proveedor}>
+                <td>{proveedor.id_proveedor}</td>
+                <td>{proveedor.nombre}</td>
+                <td>{proveedor.direccion}</td>
+                <td>{proveedor.ciudad}</td>
+                <td>{proveedor.telefono}</td>
+                <td>{proveedor.estado}</td>
+                <td className="acciones">
+                  <button onClick={() => iniciarEdicion(proveedor)}>Editar</button>
+                  <button onClick={() => eliminarProveedor(proveedor.id_proveedor)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

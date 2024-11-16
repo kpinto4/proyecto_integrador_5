@@ -55,55 +55,135 @@ app.post('/api/productos', (req, res) => {
 });
 
 // Actualizar un producto existente
-app.put('/api/productos/:id', (req, res) => {
-  const { id } = req.params;
-  const { nombre, precio } = req.body;
+app.put('/api/proveedores/:id', (req, res) => {
+  const { id } = req.params; // Extrae el ID del proveedor desde la URL
+  const { nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado } = req.body;
 
-  if (!nombre || !precio) {
-    return res.status(400).json({ message: 'El nombre y el precio son obligatorios.' });
+  // Validación básica de campos obligatorios
+  if (!nombre || !direccion || !ciudad || !telefono || !estado) {
+    return res.status(400).json({ message: 'Todos los campos obligatorios deben ser completados.' });
   }
 
-  const query = 'UPDATE producto SET nombre = ?, precio = ? WHERE cod_producto = ?';
-  inventoryDb.query(query, [nombre, precio, id], (err, results) => {
-    if (err) {
-      console.error('Error al actualizar producto:', err);
-      return res.status(500).send(err);
-    }
+  // Consulta SQL para actualizar el proveedor
+  const query = `
+    UPDATE proveedor 
+    SET nombre = ?, direccion = ?, ciudad = ?, telefono = ?, correo_electronico = ?, departamento = ?, estado = ? 
+    WHERE id_proveedor = ?
+  `;
 
-    if (results.affectedRows === 0) {
-      return res.status(404).json({ message: 'Producto no encontrado.' });
-    }
+  // Ejecución de la consulta
+  inventoryDb.query(
+    query,
+    [nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado, id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al actualizar proveedor:', err);
+        return res.status(500).send(err); // Error interno del servidor
+      }
 
-    res.json({ id, nombre, precio });
-  });
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: 'Proveedor no encontrado.' }); // ID no existe en la base de datos
+      }
+
+      // Respuesta exitosa
+      res.json({ id_proveedor: id, ...req.body });
+    }
+  );
 });
+
 
 // Eliminar un producto
-app.delete('/api/productos/:id', (req, res) => {
+app.delete('/api/proveedores/:id', (req, res) => {
   const { id } = req.params;
-  const query = 'DELETE FROM producto WHERE cod_producto = ?';
+
+  const query = 'DELETE FROM proveedor WHERE id_proveedor = ?';
+
   inventoryDb.query(query, [id], (err, results) => {
     if (err) {
-      console.error('Error al eliminar producto:', err);
+      console.error('Error al eliminar proveedor:', err);
       return res.status(500).send(err);
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      return res.status(404).json({ message: 'Proveedor no encontrado.' });
     }
-    res.json({ message: 'Producto eliminado correctamente', id });
+    res.json({ message: 'Proveedor eliminado correctamente.' });
   });
 });
 
-// Rutas de gestión de proveedores
+// Obtener todos los proveedores
 app.get('/api/proveedores', (req, res) => {
   const query = 'SELECT * FROM proveedor';
   inventoryDb.query(query, (err, results) => {
     if (err) {
-      console.error('Error en la consulta de proveedor:', err);
+      console.error('Error al obtener proveedores:', err);
       return res.status(500).send(err);
     }
-    console.log('Resultados:', results);
     res.json(results);
+  });
+});
+
+// Agregar un nuevo proveedor
+app.post('/api/proveedores', (req, res) => {
+  const { nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado } = req.body;
+
+  // Validación de campos obligatorios
+  if (!nombre || !direccion || !ciudad || !telefono || !estado) {
+    return res.status(400).json({ message: 'Todos los campos obligatorios deben ser completados.' });
+  }
+
+  const query = `INSERT INTO proveedor 
+    (nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  inventoryDb.query(query, [nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado], (err, results) => {
+    if (err) {
+      console.error('Error al agregar proveedor:', err);
+      return res.status(500).send(err);
+    }
+    // Devuelve el proveedor recién agregado
+    res.json({ id_proveedor: results.insertId, ...req.body });
+  });
+});
+
+// Editar un proveedor existente
+app.put('/api/proveedores/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado } = req.body;
+
+  if (!nombre || !direccion || !ciudad || !telefono || !estado) {
+    return res.status(400).json({ message: 'Todos los campos obligatorios deben ser completados.' });
+  }
+
+  const query = `UPDATE proveedor 
+    SET nombre = ?, direccion = ?, ciudad = ?, telefono = ?, correo_electronico = ?, departamento = ?, estado = ? 
+    WHERE id_proveedor = ?`;
+
+  inventoryDb.query(query, [nombre, direccion, ciudad, telefono, correo_electronico, departamento, estado, id], (err, results) => {
+    if (err) {
+      console.error('Error al actualizar proveedor:', err);
+      return res.status(500).send(err);
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Proveedor no encontrado.' });
+    }
+    res.json({ id_proveedor: id, ...req.body });
+  });
+});
+
+// Eliminar un proveedor
+app.delete('/api/proveedores/:id', (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM proveedor WHERE id_proveedor = ?';
+  inventoryDb.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error al eliminar proveedor:', err);
+      return res.status(500).send(err);
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Proveedor no encontrado.' });
+    }
+    res.json({ message: 'Proveedor eliminado correctamente', id_proveedor: id });
   });
 });
 
