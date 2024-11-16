@@ -31,3 +31,14 @@
 .reportes-section tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
+
+.reporte-financiero p {
+  margin: 5px 0;
+}
+
+.reportes-section p {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 10px;
+}

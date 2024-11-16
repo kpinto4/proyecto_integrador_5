@@ -11,7 +11,8 @@
   margin-bottom: 20px;
 }
 
-.ventas-section input {
+.ventas-section input,
+.ventas-section select {
   width: calc(100% - 20px);
   padding: 10px;
   margin: 10px 0;
