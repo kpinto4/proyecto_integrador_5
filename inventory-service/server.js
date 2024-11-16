@@ -199,6 +199,40 @@ app.get('/api/inventario', (req, res) => {
   });
 });
 
+// Ruta para registrar una venta
+app.post('/api/ventas', (req, res) => {
+  const { id_producto, cantidad } = req.body;
+
+  if (!id_producto || !cantidad || cantidad <= 0) {
+    return res.status(400).json({ message: 'Datos inválidos para registrar la venta.' });
+  }
+
+  // Registrar la venta
+  const queryVenta = `INSERT INTO venta (id_producto, cantidad, total_venta, fecha) 
+                      SELECT ?, ?, precio * ?, NOW()
+                      FROM producto WHERE cod_producto = ?`;
+  inventoryDb.query(queryVenta, [id_producto, cantidad, cantidad, id_producto], (err, results) => {
+    if (err) {
+      console.error('Error al registrar la venta:', err);
+      return res.status(500).send(err);
+    }
+
+    // Actualizar el stock
+    const queryStock = 'UPDATE producto SET stock = stock - ? WHERE cod_producto = ? AND stock >= ?';
+    inventoryDb.query(queryStock, [cantidad, id_producto, cantidad], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar el stock:', err);
+        return res.status(500).send(err);
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(400).json({ message: 'Stock insuficiente.' });
+      }
+
+      res.status(201).json({ message: 'Venta registrada y stock actualizado correctamente.' });
+    });
+  });
+});
 
 // Escucha en el puerto 5003
 app.listen(5003, () => {

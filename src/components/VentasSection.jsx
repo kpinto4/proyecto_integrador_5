@@ -1,137 +1,108 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/VentasSection.css';
 
 const VentasSection = () => {
-  const [productos, setProductos] = useState([]);
-  const [ventas, setVentas] = useState([]);
-  const [productoSeleccionado, setProductoSeleccionado] = useState('');
-  const [cantidad, setCantidad] = useState('');
+  const [productos, setProductos] = useState([]); // Lista de productos disponibles
+  const [venta, setVenta] = useState({
+    id_producto: '',
+    cantidad: '',
+  });
+  const [mensaje, setMensaje] = useState(''); // Mensajes de éxito o error
 
-  // Obtener productos y ventas cuando el componente se monta
+  // Obtener productos al cargar la página
   useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const response = await axios.get('http://localhost:5003/api/inventario'); // Ajusta la ruta según tu backend
+        setProductos(response.data);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      }
+    };
+
     fetchProductos();
-    fetchVentas();
   }, []);
 
-  // Función para obtener los productos desde el backend
-  const fetchProductos = () => {
-    fetch('http://localhost:5003/api/productos')
-      .then((response) => response.json())
-      .then((data) => setProductos(data))
-      .catch((error) => console.error('Error al obtener productos:', error));
+  // Manejar cambios en los inputs del formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setVenta({ ...venta, [name]: value });
   };
 
-  // Función para obtener el historial de ventas
-  const fetchVentas = () => {
-    fetch('http://localhost:5003/api/ventas')
-      .then((response) => response.json())
-      .then((data) => setVentas(data))
-      .catch((error) => console.error('Error al obtener ventas:', error));
-  };
-
-  // Función para registrar una venta
-  const handleRegistrarVenta = () => {
-    if (productoSeleccionado && cantidad > 0) {
-      // Verificar si hay suficiente stock
-      const producto = productos.find((prod) => prod.cod_producto === productoSeleccionado);
-      if (producto.stock >= cantidad) {
-        // Actualizar el inventario (reducir el stock)
-        const nuevoStock = producto.stock - cantidad;
-
-        // Actualizar producto en el inventario
-        fetch(`http://localhost:5003/api/productos/${productoSeleccionado}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...producto, stock: nuevoStock }),
-        })
-          .then((response) => response.json())
-          .then(() => {
-            // Registrar la venta
-            const nuevaVenta = {
-              cod_producto: productoSeleccionado,
-              cantidad,
-              total_venta: producto.precio * cantidad,
-              fecha: new Date().toLocaleDateString(),
-            };
-
-            fetch('http://localhost:5003/api/ventas', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(nuevaVenta),
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.success) {
-                  alert('Venta registrada exitosamente');
-                  fetchVentas(); // Actualizar historial de ventas
-                  setProductoSeleccionado('');
-                  setCantidad('');
-                } else {
-                  alert('Error al registrar la venta');
-                }
-              })
-              .catch((error) => console.error('Error al registrar la venta:', error));
-          })
-          .catch((error) => console.error('Error al actualizar inventario:', error));
-      } else {
-        alert('No hay suficiente stock disponible para esta venta');
+  // Registrar la venta
+  const registrarVenta = async () => {
+    try {
+      if (!venta.id_producto || !venta.cantidad || venta.cantidad <= 0) {
+        setMensaje('Por favor, selecciona un producto y una cantidad válida.');
+        return;
       }
-    } else {
-      alert('Por favor, seleccione un producto y una cantidad válida');
+
+      const productoSeleccionado = productos.find(
+        (producto) => producto.cod_producto === parseInt(venta.id_producto)
+      );
+
+      if (!productoSeleccionado) {
+        setMensaje('Producto no encontrado.');
+        return;
+      }
+
+      const totalVenta = productoSeleccionado.precio * venta.cantidad;
+
+      const response = await axios.post('http://localhost:5003/api/ventas', {
+        id_producto: venta.id_producto,
+        cantidad: venta.cantidad,
+      });
+
+      setMensaje(response.data.message);
+
+      // Actualizar la lista de productos para reflejar el nuevo stock
+      setProductos((prevProductos) =>
+        prevProductos.map((producto) =>
+          producto.cod_producto === parseInt(venta.id_producto)
+            ? { ...producto, stock: producto.stock - venta.cantidad }
+            : producto
+        )
+      );
+
+      // Limpiar el formulario
+      setVenta({ id_producto: '', cantidad: '' });
+    } catch (error) {
+      console.error('Error al registrar la venta:', error.response || error.message);
+      setMensaje('Hubo un error al registrar la venta.');
     }
   };
 
   return (
-    <div className="section-container ventas-section">
-      <h2>Registrar Venta</h2>
+    <div className="ventas-section">
+      <h1>Registrar Venta</h1>
       <form>
         <select
-          value={productoSeleccionado}
-          onChange={(e) => setProductoSeleccionado(e.target.value)}
-          className="input-venta"
+          name="id_producto"
+          value={venta.id_producto}
+          onChange={handleInputChange}
         >
           <option value="">Seleccionar Producto</option>
           {productos.map((producto) => (
             <option key={producto.cod_producto} value={producto.cod_producto}>
-              {producto.nombre}
+              {producto.nombre} (Stock: {producto.stock})
             </option>
           ))}
         </select>
-
         <input
           type="number"
-          value={cantidad}
-          onChange={(e) => setCantidad(e.target.value)}
+          name="cantidad"
           placeholder="Cantidad"
-          className="input-venta"
+          value={venta.cantidad}
+          onChange={handleInputChange}
         />
-
-        <button type="button" onClick={handleRegistrarVenta} className="btn-venta">
+        <button type="button" onClick={registrarVenta}>
           Registrar Venta
         </button>
       </form>
-
-      <h3>Historial de Ventas</h3>
-      <table className="tabla-ventas">
-        <thead>
-          <tr>
-            <th>ID Producto</th>
-            <th>Cantidad</th>
-            <th>Total Venta</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ventas.map((venta) => (
-            <tr key={venta.id_venta}>
-              <td>{venta.cod_producto}</td>
-              <td>{venta.cantidad}</td>
-              <td>{venta.total_venta}</td>
-              <td>{venta.fecha}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {mensaje && <p>{mensaje}</p>}
+      <h2>Historial de Ventas</h2>
+      {/* Aquí puedes agregar una tabla para mostrar el historial de ventas */}
     </div>
   );
 };

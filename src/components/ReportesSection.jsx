@@ -28,7 +28,7 @@ const ReportesSection = () => {
 
   // Función para obtener inventario desde el backend
   const fetchInventario = () => {
-    fetch('http://localhost:5003/api/productos')
+    fetch('http://localhost:5003/api/inventario')
       .then((response) => response.json())
       .then((data) => setInventario(data))
       .catch((error) => console.error('Error al obtener inventario:', error));

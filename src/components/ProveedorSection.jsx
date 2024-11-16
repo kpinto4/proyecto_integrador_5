@@ -172,7 +172,24 @@ const ProveedorSection = () => {
           ) : (
             <>
               <button type="button" onClick={guardarEdicion}>Guardar Cambios</button>
-              <button type="button" onClick={() => setEditando(false)}>Cancelar</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditando(false);
+                  setProveedorSeleccionado(null);
+                  setNuevoProveedor({
+                    nombre: '',
+                    direccion: '',
+                    ciudad: '',
+                    telefono: '',
+                    correo_electronico: '',
+                    departamento: '',
+                    estado: 'Activo',
+                  });
+                }}
+              >
+                Cancelar
+              </button>
             </>
           )}
         </form>
