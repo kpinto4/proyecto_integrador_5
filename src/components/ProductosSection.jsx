@@ -27,7 +27,7 @@ const ProductosSection = () => {
     const { name, value } = e.target;
     setNuevoProducto({ ...nuevoProducto, [name]: value });
   };
-
+    
   // Agregar un nuevo producto
   const agregarProducto = async () => {
     try {
@@ -130,7 +130,13 @@ const ProductosSection = () => {
             <button onClick={guardarEdicion} className="btn-accion actualizar">
               Guardar Cambios
             </button>
-            <button onClick={() => setEditando(false)} className="btn-accion cancelar">
+            <button onClick={() => {
+                setEditando(false); // Sal del modo de edición
+                setProductoSeleccionado(null); // Limpia el producto seleccionado
+                setNuevoProducto({ nombre: '', precio: '' }); // Limpia los campos del formulario
+              }}
+              className="btn-accion cancelar"
+            >
               Cancelar
             </button>
           </>
