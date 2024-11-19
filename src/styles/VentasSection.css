@@ -53,3 +53,26 @@
 .ventas-section tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
+
+.tabla-historial {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tabla-historial th,
+.tabla-historial td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.tabla-historial th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.tabla-historial tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+

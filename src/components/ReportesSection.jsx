@@ -20,7 +20,7 @@ const ReportesSection = () => {
 
   // Función para obtener ventas desde el backend
   const fetchVentas = () => {
-    fetch('http://localhost:5003/api/ventas')
+    fetch('http://localhost:5003/api/venta')
       .then((response) => response.json())
       .then((data) => setVentas(data))
       .catch((error) => console.error('Error al obtener ventas:', error));
