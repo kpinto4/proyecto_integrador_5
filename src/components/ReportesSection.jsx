@@ -28,7 +28,7 @@ const ReportesSection = () => {
 
   // Función para obtener inventario desde el backend
   const fetchInventario = () => {
-    fetch('http://localhost:5003/api/inventario')
+    fetch('http://localhost:5003/api/inventarios')
       .then((response) => response.json())
       .then((data) => setInventario(data))
       .catch((error) => console.error('Error al obtener inventario:', error));
@@ -36,7 +36,7 @@ const ReportesSection = () => {
 
   // Función para obtener compras desde el backend
   const fetchCompras = () => {
-    fetch('http://localhost:5003/api/compras')
+    fetch('http://localhost:5003/api/compra')
       .then((response) => response.json())
       .then((data) => setCompras(data))
       .catch((error) => console.error('Error al obtener compras:', error));

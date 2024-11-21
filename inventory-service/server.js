@@ -25,7 +25,7 @@ inventoryDb.connect((err) => {
 
 // Obtener todos los productos
 app.get('/api/productos', (req, res) => {
-  const query = 'SELECT cod_producto AS id, nombre, precio FROM producto';
+  const query = 'SELECT cod_producto AS id, nombre, precio FROM producto;';
   inventoryDb.query(query, (err, results) => {
     if (err) {
       console.error('Error al obtener productos:', err);
@@ -34,6 +34,17 @@ app.get('/api/productos', (req, res) => {
     res.json(results);
   });
 });
+
+const desactivarStockCero = () => {
+  const query = 'UPDATE inventario SET activo = FALSE WHERE stock = 0';
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al desactivar registros con stock 0:', err);
+    } else {
+      console.log(`Se desactivaron ${results.affectedRows} registros con stock 0.`);
+    }
+  });
+};
 
 // Insertar un nuevo producto
 app.post('/api/productos', (req, res) => {
@@ -163,56 +174,96 @@ app.delete('/api/proveedores/:id', (req, res) => {
   });
 });
 
-// Obtener todos los productos con datos de inventario
+//Obtener Datos de Inventario
 app.get('/api/inventario', (req, res) => {
-  const query = 'SELECT * FROM producto'; // Ajusta la consulta según lo necesario
+  const query = 'SELECT i.id_inventario, p.nombre AS producto, i.lote, i.stock, i.fechaingreso FROM inventario i JOIN producto p ON i.producto = p.cod_producto';
   inventoryDb.query(query, (err, results) => {
     if (err) {
-      console.error('Error al obtener datos del inventario:', err);
+      console.error('Error al obtener el inventario:', err);
       return res.status(500).send(err);
     }
     res.json(results);
   });
 });
 
-app.post('/api/ventas', (req, res) => {
-  const { id_producto, cantidad } = req.body;
 
-  if (!id_producto || !cantidad || cantidad <= 0) {
-    return res.status(400).json({ message: 'Datos inválidos para registrar la venta.' });
-  }
+app.put('/api/inventario/actualizar', (req, res) => {
+  const { id_inventario, nuevo_stock } = req.body;
 
-  // Registrar la venta con la columna correcta 'cod_producto'
-  const queryVenta = 'INSERT INTO venta (cod_producto, cantidad, valor, fecha) SELECT ?, ?, precio * ?, NOW() FROM producto WHERE cod_producto = ?; ';
+  const queryActualizarStock = 'UPDATE inventario SET stock = ? WHERE id_inventario = ?;';
 
-  inventoryDb.query(queryVenta, [id_producto, cantidad, cantidad, id_producto], (err, results) => {
+  inventoryDb.query(queryActualizarStock, [nuevo_stock, id_inventario], (err, results) => {
     if (err) {
-      console.error('Error al registrar la venta:', err);
+      console.error('Error al actualizar stock:', err);
       return res.status(500).send(err);
     }
 
-    // Actualizar el stock del producto
-    const queryStock = 'UPDATE producto SET stock = stock - ? WHERE cod_producto = ? AND stock >= ?; ';
+    if (results.affectedRows > 0) {
+      // Verificar si hay lotes con stock = 0 y eliminarlos
+      const queryEliminarLotes = 'DELETE FROM inventario WHERE stock = 0;';
+      inventoryDb.query(queryEliminarLotes, (err, deleteResults) => {
+        if (err) {
+          console.error('Error al eliminar lotes con stock 0:', err);
+          return res.status(500).send(err);
+        }
 
-    inventoryDb.query(queryStock, [cantidad, id_producto, cantidad], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar el stock:', err);
-        return res.status(500).send(err);
-      }
-
-      if (result.affectedRows === 0) {
-        return res.status(400).json({ message: 'Stock insuficiente para realizar la venta.' });
-      }
-
-      res.status(201).json({ message: 'Venta registrada y stock actualizado correctamente.' });
-    });
+        console.log(`Lotes eliminados: ${deleteResults.affectedRows}`);
+        res.json({ message: 'Stock actualizado y lotes con stock 0 eliminados.' });
+      });
+    } else {
+      res.status(404).json({ message: 'No se encontró el inventario para actualizar.' });
+    }
   });
 });
 
+app.post('/api/ventas', (req, res) => {
+  const { cod_producto, cantidad } = req.body;
+
+  if (!cod_producto || !cantidad) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+  }
+
+  // Consulta para insertar la venta
+  const insertVentaQuery = 'INSERT INTO venta (cod_producto, cantidad, valor, fecha) VALUES (?, ?, (SELECT precio FROM producto WHERE cod_producto = ?) * ?, NOW());';
+  // Consulta para actualizar inventario
+  const updateInventarioQuery = 'UPDATE inventario SET stock = stock - ?, lote = LAST_INSERT_ID() WHERE producto = ? AND stock >= ?;';
+  inventoryDb.query(
+    insertVentaQuery,
+    [cod_producto, cantidad, cod_producto, cantidad],
+    (err, result) => {
+      if (err) {
+        console.error('Error al registrar la venta:', err);
+        return res.status(500).send(err);
+      }
+
+      // Actualizar inventario
+      inventoryDb.query(
+        updateInventarioQuery,
+        [cantidad, cod_producto, cantidad],
+        (inventoryErr) => {
+          if (inventoryErr) {
+            console.error('Error al actualizar el inventario:', inventoryErr);
+            return res.status(500).send(inventoryErr);
+          }
+
+          desactivarStockCero();
+          
+          res.status(201).json({
+            id_venta: result.insertId,
+            cod_producto,
+            cantidad,
+            fecha: new Date(),
+          });
+        }
+      );
+    }
+  );
+});
+
+
 //Obtener Historial de Ventas
 app.get('/api/ventas', (req, res) => {
-  const query = 'SELECT v.id_venta, p.nombre AS producto, v.cantidad, v.valor, DATE(v.fecha) AS fecha FROM venta v INNER JOIN producto p ON v.cod_producto = p.cod_producto ORDER BY v.fecha DESC; ';
-
+  const query = 'SELECT v.id_venta, p.nombre AS producto, v.cantidad, (v.cantidad * p.precio) AS total_venta, v.fecha FROM venta v INNER JOIN producto p ON v.cod_producto = p.cod_producto ORDER BY v.fecha DESC;';
   inventoryDb.query(query, (err, results) => {
     if (err) {
       console.error('Error al obtener el historial de ventas:', err);
@@ -221,6 +272,63 @@ app.get('/api/ventas', (req, res) => {
     res.json(results);
   });
 });
+
+//Consultar Compras
+app.get('/api/compras', (req, res) => {
+  const query = 'SELECT c.id_compra,p.nombre AS producto,pr.nombre AS proveedor,c.cantidad,c.fecha,c.total FROM compra c INNER JOIN producto p ON c.cod_producto = p.cod_producto INNER JOIN proveedor pr ON c.id_proveedor = pr.id_proveedor ORDER BY c.fecha DESC;';
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener el historial de compras:', err);
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/compras', (req, res) => {
+  const { cod_producto, cantidad, precio_unitario, id_proveedor } = req.body;
+
+  if (!cod_producto || !cantidad || !precio_unitario || !id_proveedor) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+  }
+
+  // Consulta para insertar la compra
+  const insertCompraQuery = `INSERT INTO compra (cod_producto, id_proveedor, cantidad, fecha, total) VALUES (?, ?, ?, NOW(), ?);`;
+  // Consulta para insertar en inventario
+  const insertInventarioQuery = `INSERT INTO inventario (producto, lote, stock, fechaingreso) VALUES (?, ?, ?, NOW());`;
+  inventoryDb.query(
+    insertCompraQuery,
+    [cod_producto, id_proveedor, cantidad, precio_unitario],
+    (err, result) => {
+      if (err) {
+        console.error('Error al registrar la compra:', err);
+        return res.status(500).send(err);
+      }
+
+      // Insertar en inventario
+      inventoryDb.query(
+        insertInventarioQuery,
+        [cod_producto, result.insertId, cantidad],
+        (inventoryErr) => {
+          if (inventoryErr) {
+            console.error('Error al actualizar el inventario:', inventoryErr);
+            return res.status(500).send(inventoryErr);
+          }
+
+          res.status(201).json({
+            id_compra: result.insertId,
+            cod_producto,
+            id_proveedor,
+            cantidad,
+            fecha: new Date(),
+            total: precio_unitario,
+          });
+        }
+      );
+    }
+  );
+});
+
 
 // Escucha en el puerto 5003
 app.listen(5003, () => {

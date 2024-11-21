@@ -3,64 +3,48 @@ import axios from 'axios';
 import '../styles/InventarioSection.css';
 
 const InventarioSection = () => {
-  const [productos, setProductos] = useState([]); // Todos los productos
-  const [filtro, setFiltro] = useState(''); // Texto ingresado en la barra de búsqueda
+  const [inventario, setInventario] = useState([]);
 
-  // Obtener productos desde el backend
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchInventario = async () => {
       try {
         const response = await axios.get('http://localhost:5003/api/inventario');
-        setProductos(response.data);
+        setInventario(response.data);
       } catch (error) {
-        console.error('Error al cargar productos:', error);
+        console.error('Error al cargar el inventario:', error);
       }
     };
 
-    fetchProductos();
+    fetchInventario();
   }, []);
-
-  // Filtrar productos en tiempo real
-  const productosFiltrados = productos.filter((producto) =>
-    producto.nombre.toLowerCase().includes(filtro.toLowerCase())
-  );
 
   return (
     <div className="inventario-section">
       <h1>Inventario</h1>
-      <input
-        id="search-inventory"
-        type="text"
-        placeholder="Buscar producto por nombre..."
-        value={filtro}
-        onChange={(e) => setFiltro(e.target.value)} // Actualiza el filtro en tiempo real
-      />
       <table>
         <thead>
           <tr>
-            <th>Código</th>
+            <th>ID Inventario</th>
             <th>Producto</th>
             <th>Lote</th>
-            <th>Precio</th>
             <th>Stock</th>
             <th>Fecha de Ingreso</th>
           </tr>
         </thead>
         <tbody>
-          {productosFiltrados.length > 0 ? (
-            productosFiltrados.map((producto) => (
-              <tr key={producto.cod_producto}>
-                <td>{producto.cod_producto}</td>
-                <td>{producto.nombre}</td>
-                <td>{producto.lote}</td>
-                <td>{producto.precio}</td>
-                <td>{producto.stock}</td>
-                <td>{new Date(producto.fecha_ingreso).toLocaleDateString()}</td>
+          {inventario.length > 0 ? (
+            inventario.map((item) => (
+              <tr key={item.id_inventario}>
+                <td>{item.id_inventario}</td>
+                <td>{item.producto}</td>
+                <td>{item.lote}</td>
+                <td>{item.stock}</td>
+                <td>{new Date(item.fechaingreso).toLocaleDateString('es-ES')}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="no-data">No se encontraron productos</td>
+              <td colSpan="5">No hay registros en el inventario.</td>
             </tr>
           )}
         </tbody>

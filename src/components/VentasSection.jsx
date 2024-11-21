@@ -3,114 +3,105 @@ import axios from 'axios';
 import '../styles/VentasSection.css';
 
 const VentasSection = () => {
-  const [productos, setProductos] = useState([]); // Lista de productos disponibles
-  const [venta, setVenta] = useState({
-    id_producto: '',
+  const [productos, setProductos] = useState([]);
+  const [ventas, setVentas] = useState([]);
+  const [nuevaVenta, setNuevaVenta] = useState({
+    cod_producto: '',
     cantidad: '',
   });
-  const [mensaje, setMensaje] = useState(''); // Mensajes de éxito o error
+  const [totalEstimado, setTotalEstimado] = useState(0);
 
-  // Obtener productos al cargar la página
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await axios.get('http://localhost:5003/api/inventario'); // Ajusta la ruta según tu backend
+        const response = await axios.get('http://localhost:5003/api/productos');
         setProductos(response.data);
       } catch (error) {
         console.error('Error al cargar productos:', error);
       }
     };
 
-    fetchProductos();
-  }, []);
-
-  // Manejar cambios en los inputs del formulario
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setVenta({ ...venta, [name]: value });
-  };
-
-  // Mostrar el Historial de Ventas
-  const [historialVentas, setHistorialVentas] = useState([]);
-  useEffect(() => {
-    const fetchHistorial = async () => {
+    const fetchVentas = async () => {
       try {
         const response = await axios.get('http://localhost:5003/api/ventas');
-        setHistorialVentas(response.data);
+        setVentas(response.data);
       } catch (error) {
         console.error('Error al cargar el historial de ventas:', error);
       }
     };
 
-    fetchHistorial();
+    fetchProductos();
+    fetchVentas();
   }, []);
 
-  // Registrar la venta
+  useEffect(() => {
+    if (nuevaVenta.cod_producto && nuevaVenta.cantidad) {
+      const productoSeleccionado = productos.find(
+        (prod) => prod.id === parseInt(nuevaVenta.cod_producto)
+      );
+      if (productoSeleccionado) {
+        setTotalEstimado(productoSeleccionado.precio * nuevaVenta.cantidad);
+      }
+    } else {
+      setTotalEstimado(0);
+    }
+  }, [nuevaVenta, productos]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevaVenta({ ...nuevaVenta, [name]: value });
+  };
+
   const registrarVenta = async () => {
     try {
-      if (!venta.id_producto || !venta.cantidad || venta.cantidad <= 0) {
-        alert('Por favor, selecciona un producto y una cantidad válida.');
+      if (!nuevaVenta.cod_producto || !nuevaVenta.cantidad) {
+        alert('Por favor, selecciona un producto y especifica la cantidad.');
         return;
       }
-  
-      console.log('Datos enviados:', {
-        id_producto: venta.id_producto,
-        cantidad: venta.cantidad,
-      });
-  
-      const response = await axios.post('http://localhost:5003/api/ventas', {
-        id_producto: venta.id_producto,
-        cantidad: venta.cantidad,
-      });
-  
-      setMensaje(response.data.message);
-  
-      // Actualizar el stock en el frontend
-      setProductos((prevProductos) =>
-        prevProductos.map((producto) =>
-          producto.cod_producto === parseInt(venta.id_producto)
-            ? { ...producto, stock: producto.stock - venta.cantidad }
-            : producto
-        )
-      );
-  
-      setVenta({ id_producto: '', cantidad: '' });
+
+      const response = await axios.post('http://localhost:5003/api/ventas', nuevaVenta);
+      setVentas([...ventas, response.data]);
+      setNuevaVenta({ cod_producto: '', cantidad: '' });
+      setTotalEstimado(0);
+      alert('Venta registrada exitosamente.');
     } catch (error) {
-      console.error('Error al registrar la venta:', error.response || error.message);
-      setMensaje('Hubo un error al registrar la venta.');
+      console.error('Error al registrar la venta:', error);
+      alert('Hubo un error al registrar la venta.');
     }
-  };  
+  };
 
   return (
-    <div className="ventas-section">
+    <div className="section-container">
       <h1>Registrar Venta</h1>
-      <form>
-        <select
-          name="id_producto"
-          value={venta.id_producto}
-          onChange={handleInputChange}
-        >
-          <option value="">Seleccionar Producto</option>
-          {productos.map((producto) => (
-            <option key={producto.cod_producto} value={producto.cod_producto}>
-              {producto.nombre} (Stock: {producto.stock})
-            </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          name="cantidad"
-          placeholder="Cantidad"
-          value={venta.cantidad}
-          onChange={handleInputChange}
-        />
-        <button type="button" onClick={registrarVenta}>
-          Registrar Venta
-        </button>
-      </form>
-      {mensaje && <p>{mensaje}</p>}
+      <div className="venta-form">
+        <div className="form-group">
+          <select
+            name="cod_producto"
+            value={nuevaVenta.cod_producto}
+            onChange={handleInputChange}
+          >
+            <option value="">Seleccionar Producto</option>
+            {productos.map((producto) => (
+              <option key={producto.id} value={producto.id}>
+                {producto.nombre} (Stock: {producto.stock})
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            name="cantidad"
+            placeholder="Cantidad"
+            value={nuevaVenta.cantidad}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="form-group">
+          <span>Total Estimado: ${totalEstimado}</span>
+          <button onClick={registrarVenta}>Registrar Venta</button>
+        </div>
+      </div>
       <h2>Historial de Ventas</h2>
-      <table className="tabla-historial">
+      <table>
         <thead>
           <tr>
             <th>ID Venta</th>
@@ -121,23 +112,15 @@ const VentasSection = () => {
           </tr>
         </thead>
         <tbody>
-          {historialVentas.length > 0 ? (
-            historialVentas.map((venta) => (
-              <tr key={venta.id_venta}>
-                <td>{venta.id_venta}</td>
-                <td>{venta.producto}</td>
-                <td>{venta.cantidad}</td>
-                <td>${venta.valor.toFixed(2)}</td>
-                <td>{new Date(venta.fecha).toLocaleDateString('es-ES')}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5" style={{ textAlign: 'center' }}>
-                No hay ventas registradas.
-              </td>
+          {ventas.map((venta) => (
+            <tr key={venta.id_venta}>
+              <td>{venta.id_venta}</td>
+              <td>{venta.producto}</td>
+              <td>{venta.cantidad}</td>
+              <td>${venta.total_venta}</td>
+              <td>{new Date(venta.fecha).toLocaleDateString()}</td>
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </div>
