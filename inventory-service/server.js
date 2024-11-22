@@ -176,7 +176,7 @@ app.delete('/api/proveedores/:id', (req, res) => {
 
 //Obtener Datos de Inventario
 app.get('/api/inventario', (req, res) => {
-  const query = 'SELECT i.id_inventario, p.nombre AS producto, i.lote, i.stock, i.fechaingreso FROM inventario i JOIN producto p ON i.producto = p.cod_producto';
+  const query = 'SELECT i.id_inventario, p.nombre AS producto, i.lote, i.stock, i.fechaingreso FROM inventario i JOIN producto p ON i.producto = p.cod_producto WHERE i.stock > 0;';
   inventoryDb.query(query, (err, results) => {
     if (err) {
       console.error('Error al obtener el inventario:', err);
@@ -216,6 +216,7 @@ app.put('/api/inventario/actualizar', (req, res) => {
   });
 });
 
+// Registrar Venta
 app.post('/api/ventas', (req, res) => {
   const { cod_producto, cantidad } = req.body;
 
@@ -223,43 +224,63 @@ app.post('/api/ventas', (req, res) => {
     return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
   }
 
-  // Consulta para insertar la venta
-  const insertVentaQuery = 'INSERT INTO venta (cod_producto, cantidad, valor, fecha) VALUES (?, ?, (SELECT precio FROM producto WHERE cod_producto = ?) * ?, NOW());';
-  // Consulta para actualizar inventario
-  const updateInventarioQuery = 'UPDATE inventario SET stock = stock - ?, lote = LAST_INSERT_ID() WHERE producto = ? AND stock >= ?;';
-  inventoryDb.query(
-    insertVentaQuery,
-    [cod_producto, cantidad, cod_producto, cantidad],
-    (err, result) => {
-      if (err) {
-        console.error('Error al registrar la venta:', err);
-        return res.status(500).send(err);
+  // Seleccionar el lote más antiguo con stock suficiente
+  const selectQuery = `
+    SELECT id_inventario, stock 
+    FROM inventario 
+    WHERE producto = ? AND stock > 0 
+    ORDER BY fechaingreso ASC 
+    LIMIT 1;
+  `;
+
+  inventoryDb.query(selectQuery, [cod_producto], (err, results) => {
+    if (err) {
+      console.error('Error al seleccionar lote:', err);
+      return res.status(500).send(err);
+    }
+
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'No hay stock suficiente para este producto.' });
+    }
+
+    const { id_inventario, stock } = results[0];
+
+    if (stock < cantidad) {
+      return res.status(400).json({ message: 'Stock insuficiente en el lote seleccionado.' });
+    }
+
+    // Actualizar el stock del lote seleccionado
+    const updateQuery = `
+      UPDATE inventario 
+      SET stock = stock - ? 
+      WHERE id_inventario = ?;
+    `;
+
+    inventoryDb.query(updateQuery, [cantidad, id_inventario], (updateErr) => {
+      if (updateErr) {
+        console.error('Error al actualizar el stock:', updateErr);
+        return res.status(500).send(updateErr);
       }
 
-      // Actualizar inventario
-      inventoryDb.query(
-        updateInventarioQuery,
-        [cantidad, cod_producto, cantidad],
-        (inventoryErr) => {
-          if (inventoryErr) {
-            console.error('Error al actualizar el inventario:', inventoryErr);
-            return res.status(500).send(inventoryErr);
-          }
+      // Registrar la venta
+      const insertVentaQuery = `
+        INSERT INTO venta (cod_producto, cantidad, valor, fecha)
+        SELECT ?, ?, precio * ?, NOW()
+        FROM producto 
+        WHERE cod_producto = ?;
+      `;
 
-          desactivarStockCero();
-          
-          res.status(201).json({
-            id_venta: result.insertId,
-            cod_producto,
-            cantidad,
-            fecha: new Date(),
-          });
+      inventoryDb.query(insertVentaQuery, [cod_producto, cantidad, cantidad, cod_producto], (insertErr, result) => {
+        if (insertErr) {
+          console.error('Error al registrar la venta:', insertErr);
+          return res.status(500).send(insertErr);
         }
-      );
-    }
-  );
-});
 
+        res.json({ message: 'Venta registrada exitosamente.', id_venta: result.insertId });
+      });
+    });
+  });
+});
 
 //Obtener Historial de Ventas
 app.get('/api/ventas', (req, res) => {
@@ -293,9 +314,9 @@ app.post('/api/compras', (req, res) => {
   }
 
   // Consulta para insertar la compra
-  const insertCompraQuery = `INSERT INTO compra (cod_producto, id_proveedor, cantidad, fecha, total) VALUES (?, ?, ?, NOW(), ?);`;
+  const insertCompraQuery = 'INSERT INTO compra (cod_producto, id_proveedor, cantidad, fecha, total) VALUES (?, ?, ?, NOW(), ?);';
   // Consulta para insertar en inventario
-  const insertInventarioQuery = `INSERT INTO inventario (producto, lote, stock, fechaingreso) VALUES (?, ?, ?, NOW());`;
+  const insertInventarioQuery = 'INSERT INTO inventario (producto, lote, stock, fechaingreso) VALUES (?, ?, ?, NOW());';
   inventoryDb.query(
     insertCompraQuery,
     [cod_producto, id_proveedor, cantidad, precio_unitario],
@@ -329,6 +350,28 @@ app.post('/api/compras', (req, res) => {
   );
 });
 
+app.get('/api/alertas', (req, res) => {
+  const query = `
+    SELECT 
+      p.nombre AS producto,
+      i.stock, 
+      i.fechaingreso, 
+      DATEDIFF(NOW(), i.fechaingreso) AS dias_desde_ingreso
+    FROM inventario i
+    JOIN producto p ON i.producto = p.cod_producto
+    WHERE i.stock > 0 AND (i.stock <= 3 OR DATEDIFF(NOW(), i.fechaingreso) >= 5);
+  `;
+  console.log('Ejecutando consulta:', query); // DEPURACIÓN
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener alertas:', err); // Muestra más detalles del error
+      res.status(500).send(err);
+    } else {
+      console.log('Resultados obtenidos:', results); // Verifica los resultados obtenidos
+      res.json(results);
+    }
+  });
+});
 
 // Escucha en el puerto 5003
 app.listen(5003, () => {

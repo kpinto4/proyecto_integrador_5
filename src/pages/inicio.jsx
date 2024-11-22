@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import InicioSection from '../components/InicioSection';
 import InventarioSection from '../components/InventarioSection';
 import ProductosSection from '../components/ProductosSection';
 import ProveedorSection from '../components/ProveedorSection';
@@ -89,12 +90,7 @@ function Inicio() {
     <div className="inventory">
       <Sidebar mostrarSeccion={mostrarSeccion} cerrarSesion={cerrarSesion} />
       <div id="content-section">
-        {seccionActiva === 'inicio' && (
-          <div className="section-container inicio-section">
-            <h1>Bienvenido al Sistema de Inventario</h1>
-            <p>Aquí puedes ver las notificaciones más recientes sobre el inventario.</p>
-          </div>
-        )}
+        {seccionActiva === 'inicio' && <InicioSection />}
         {seccionActiva === 'inventario' && <InventarioSection inventario={inventario} />}
         {seccionActiva === 'productos' && <ProductosSection productos={productos} />}
         {seccionActiva === 'proveedor' && <ProveedorSection proveedores={proveedores} />}
