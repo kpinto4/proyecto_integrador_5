@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ProveedorSection.css';
 
-const ProveedorSection = () => {
+const ProveedorSection = ({ cargoUsuario }) => {
   const [proveedores, setProveedores] = useState([]);
   const [nuevoProveedor, setNuevoProveedor] = useState({
     nombre: '',
@@ -46,7 +46,7 @@ const ProveedorSection = () => {
 
       const response = await axios.post('http://localhost:5003/api/proveedores', nuevoProveedor);
 
-      setProveedores([...proveedores, response.data]); // Actualizar la lista
+      setProveedores([...proveedores, response.data]);
       setNuevoProveedor({
         nombre: '',
         direccion: '',
@@ -120,79 +120,84 @@ const ProveedorSection = () => {
     <div className="section-container">
       <div className="proveedor-section">
         <h1>Gestionar Proveedores</h1>
-        <form>
-          <input
-            type="text"
-            placeholder="Nombre del Proveedor"
-            name="nombre"
-            value={nuevoProveedor.nombre}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            placeholder="Dirección"
-            name="direccion"
-            value={nuevoProveedor.direccion}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            placeholder="Ciudad"
-            name="ciudad"
-            value={nuevoProveedor.ciudad}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            placeholder="Teléfono"
-            name="telefono"
-            value={nuevoProveedor.telefono}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            placeholder="Correo Electrónico"
-            name="correo_electronico"
-            value={nuevoProveedor.correo_electronico}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            placeholder="Departamento"
-            name="departamento"
-            value={nuevoProveedor.departamento}
-            onChange={handleInputChange}
-          />
-          <select name="estado" value={nuevoProveedor.estado} onChange={handleInputChange}>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
-          {!editando ? (
-            <button type="button" onClick={agregarProveedor}>Agregar Proveedor</button>
-          ) : (
-            <>
-              <button type="button" onClick={guardarEdicion}>Guardar Cambios</button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditando(false);
-                  setProveedorSeleccionado(null);
-                  setNuevoProveedor({
-                    nombre: '',
-                    direccion: '',
-                    ciudad: '',
-                    telefono: '',
-                    correo_electronico: '',
-                    departamento: '',
-                    estado: 'Activo',
-                  });
-                }}
-              >
-                Cancelar
-              </button>
-            </>
-          )}
-        </form>
+
+        {/* Mostrar el formulario solo si el usuario es Administrador */}
+        {cargoUsuario === 'Administrador' && (
+          <form>
+            <input
+              type="text"
+              placeholder="Nombre del Proveedor"
+              name="nombre"
+              value={nuevoProveedor.nombre}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              placeholder="Dirección"
+              name="direccion"
+              value={nuevoProveedor.direccion}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              placeholder="Ciudad"
+              name="ciudad"
+              value={nuevoProveedor.ciudad}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              placeholder="Teléfono"
+              name="telefono"
+              value={nuevoProveedor.telefono}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              placeholder="Correo Electrónico"
+              name="correo_electronico"
+              value={nuevoProveedor.correo_electronico}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              placeholder="Departamento"
+              name="departamento"
+              value={nuevoProveedor.departamento}
+              onChange={handleInputChange}
+            />
+            <select name="estado" value={nuevoProveedor.estado} onChange={handleInputChange}>
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+            {!editando ? (
+              <button type="button" onClick={agregarProveedor}>Agregar Proveedor</button>
+            ) : (
+              <>
+                <button type="button" onClick={guardarEdicion}>Guardar Cambios</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditando(false);
+                    setProveedorSeleccionado(null);
+                    setNuevoProveedor({
+                      nombre: '',
+                      direccion: '',
+                      ciudad: '',
+                      telefono: '',
+                      correo_electronico: '',
+                      departamento: '',
+                      estado: 'Activo',
+                    });
+                  }}
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
+          </form>
+        )}
+
         <table>
           <thead>
             <tr>
@@ -202,7 +207,7 @@ const ProveedorSection = () => {
               <th>Ciudad</th>
               <th>Teléfono</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              {cargoUsuario === 'Administrador' && <th>Acciones</th>}
             </tr>
           </thead>
           <tbody>
@@ -214,10 +219,13 @@ const ProveedorSection = () => {
                 <td>{proveedor.ciudad}</td>
                 <td>{proveedor.telefono}</td>
                 <td>{proveedor.estado}</td>
-                <td className="acciones">
-                  <button onClick={() => iniciarEdicion(proveedor)}>Editar</button>
-                  <button onClick={() => eliminarProveedor(proveedor.id_proveedor)}>Eliminar</button>
-                </td>
+                {/* Mostrar acciones solo si el usuario es Administrador */}
+                {cargoUsuario === 'Administrador' && (
+                  <td className="acciones">
+                    <button onClick={() => iniciarEdicion(proveedor)}>Editar</button>
+                    <button onClick={() => eliminarProveedor(proveedor.id_proveedor)}>Eliminar</button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

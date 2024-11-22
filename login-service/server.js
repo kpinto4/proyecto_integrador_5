@@ -25,21 +25,25 @@ loginDb.connect((err) => {
 
 // Ruta para el login
 app.post('/api/login', (req, res) => {
-  console.log('Recibida petición de login'); // Este mensaje debe aparecer cuando se haga la petición desde el frontend
+  console.log('Recibida petición de login');
 
   const { username, password } = req.body;
-  console.log('Datos recibidos:', username, password); // Imprime los datos recibidos
+  console.log('Datos recibidos:', username, password);
 
-  const query = 'SELECT * FROM usuario WHERE username = ? AND password = ?';
+  const query = 'SELECT cargo FROM usuario WHERE username = ? AND password = ?';
   loginDb.query(query, [username, password], (err, results) => {
     if (err) {
-      console.error('Error en la consulta SQL:', err); // Mensaje en caso de error con la consulta SQL
+      console.error('Error en la consulta SQL:', err);
       return res.status(500).send('Error en el servidor');
     }
 
     if (results.length > 0) {
-      console.log('Usuario encontrado');
-      res.json({ success: true, message: 'Inicio de sesión exitoso' });
+      console.log('Usuario encontrado:', results[0].cargo);
+      res.json({ 
+        success: true, 
+        message: 'Inicio de sesión exitoso',
+        cargo: results[0].cargo // Incluye el cargo en la respuesta
+      });
     } else {
       console.log('Credenciales incorrectas');
       res.json({ success: false, message: 'Credenciales incorrectas' });

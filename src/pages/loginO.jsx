@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/LoginSection.css'; // Importa los estilos específicos para la sección de login
 
 function Login() {
@@ -7,27 +8,24 @@ function Login() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5002/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        // Guarda el usuario en localStorage para la verificación de autenticación
-        localStorage.setItem('usuarioAutenticado', JSON.stringify({ username }));
-        navigate('/inicio'); // Redirige a la página de inicio
+      const response = await axios.post('http://localhost:5002/api/login', { username, password });
+      if (response.data.success) {
+        localStorage.setItem(
+          'usuarioAutenticado', 
+          JSON.stringify({ username, cargo: response.data.cargo }) // Guarda el cargo del usuario
+        );
+        navigate('/inicio');
       } else {
-        alert('Credenciales incorrectas');
+        alert(response.data.message);
       }
     } catch (error) {
-      console.error('Error en la autenticación:', error);
+      console.error('Error al iniciar sesión:', error);
+      alert('Hubo un problema al iniciar sesión. Por favor, intenta de nuevo.');
     }
-  };
+  };  
 
   return (
     <div className="login-container">

@@ -8,13 +8,14 @@ import ProveedorSection from '../components/ProveedorSection';
 import ReportesSection from '../components/ReportesSection';
 import ComprasSection from '../components/ComprasSection';
 import VentasSection from '../components/VentasSection';
-import Usuarios from '../components/Usuarios'; // Importa el componente Usuarios
-import '../styles/App.css'; // Estilos globales
-import '../styles/InicioSection.css'; // Estilos específicos de la sección de inicio
+import Usuarios from '../components/Usuarios';
+import '../styles/App.css';
+import '../styles/InicioSection.css';
 
 function Inicio() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inicio');
+  const [cargoUsuario, setCargoUsuario] = useState('');
   const [inventario, setInventario] = useState([]);
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -26,8 +27,9 @@ function Inicio() {
       navigate('/');
     } else {
       document.getElementById('username-display').textContent = usuarioAutenticado.username;
+      setCargoUsuario(usuarioAutenticado.cargo); // Asegúrate de configurar el cargo del usuario
     }
-  }, [navigate]);
+  }, [navigate]);  
 
   const cerrarSesion = () => {
     localStorage.removeItem('usuarioAutenticado');
@@ -88,16 +90,16 @@ function Inicio() {
 
   return (
     <div className="inventory">
-      <Sidebar mostrarSeccion={mostrarSeccion} cerrarSesion={cerrarSesion} />
+      <Sidebar mostrarSeccion={mostrarSeccion} cerrarSesion={cerrarSesion} cargoUsuario={cargoUsuario} />
       <div id="content-section">
         {seccionActiva === 'inicio' && <InicioSection />}
         {seccionActiva === 'inventario' && <InventarioSection inventario={inventario} />}
         {seccionActiva === 'productos' && <ProductosSection productos={productos} />}
-        {seccionActiva === 'proveedor' && <ProveedorSection proveedores={proveedores} />}
-        {seccionActiva === 'reportes' && <ReportesSection reportes={reportes} />}
+        {seccionActiva === 'proveedor' && <ProveedorSection proveedores={proveedores} cargoUsuario={cargoUsuario} />}
+        {seccionActiva === 'reportes' && cargoUsuario === 'Administrador' && <ReportesSection reportes={reportes} />}
         {seccionActiva === 'compras' && <ComprasSection />}
         {seccionActiva === 'ventas' && <VentasSection />}
-        {seccionActiva === 'usuarios' && <Usuarios />} {/* Nueva sección de Usuarios */}
+        {seccionActiva === 'usuarios' && cargoUsuario === 'Administrador' && <Usuarios />}
       </div>
     </div>
   );
