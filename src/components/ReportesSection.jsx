@@ -1,192 +1,129 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import '../styles/ReportesSection.css';
 
 const ReportesSection = () => {
-  // Estados para almacenar los datos de cada reporte
-  const [ventas, setVentas] = useState([]);
-  const [inventario, setInventario] = useState([]);
-  const [compras, setCompras] = useState([]);
-  const [desempenoProductos, setDesempenoProductos] = useState([]);
-  const [financiero, setFinanciero] = useState(null);
+  const [reporteVentas, setReporteVentas] = useState(null);
+  const [reporteCompras, setReporteCompras] = useState(null);
+  const [reporteFinanciero, setReporteFinanciero] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Función para obtener los reportes desde el backend
   useEffect(() => {
-    fetchVentas();
-    fetchInventario();
-    fetchCompras();
-    fetchDesempenoProductos();
-    fetchReporteFinanciero();
+    cargarReporteVentas();
+    cargarReporteCompras();
+    cargarReporteFinanciero();
   }, []);
 
-  // Función para obtener ventas desde el backend
-  const fetchVentas = () => {
-    fetch('http://localhost:5003/api/venta')
-      .then((response) => response.json())
-      .then((data) => setVentas(data))
-      .catch((error) => console.error('Error al obtener ventas:', error));
+  const cargarReporteVentas = async () => {
+    try {
+      const response = await axios.get('http://localhost:5003/api/reportes/ventas');
+      setReporteVentas(response.data);
+    } catch (error) {
+      console.error('Error al cargar el reporte de ventas:', error);
+      setError('Error al cargar el reporte de ventas.');
+    }
   };
 
-  // Función para obtener inventario desde el backend
-  const fetchInventario = () => {
-    fetch('http://localhost:5003/api/inventarios')
-      .then((response) => response.json())
-      .then((data) => setInventario(data))
-      .catch((error) => console.error('Error al obtener inventario:', error));
+  const cargarReporteCompras = async () => {
+    try {
+      const response = await axios.get('http://localhost:5003/api/reportes/compras');
+      setReporteCompras(response.data);
+    } catch (error) {
+      console.error('Error al cargar el reporte de compras:', error);
+      setError('Error al cargar el reporte de compras.');
+    }
   };
 
-  // Función para obtener compras desde el backend
-  const fetchCompras = () => {
-    fetch('http://localhost:5003/api/compra')
-      .then((response) => response.json())
-      .then((data) => setCompras(data))
-      .catch((error) => console.error('Error al obtener compras:', error));
-  };
-
-  // Función para obtener desempeño de productos desde el backend
-  const fetchDesempenoProductos = () => {
-    fetch('http://localhost:5003/api/desempenoProductos')
-      .then((response) => response.json())
-      .then((data) => setDesempenoProductos(data))
-      .catch((error) => console.error('Error al obtener desempeño de productos:', error));
-  };
-
-  // Función para obtener reporte financiero
-  const fetchReporteFinanciero = () => {
-    fetch('http://localhost:5003/api/reporteFinanciero')
-      .then((response) => response.json())
-      .then((data) => setFinanciero(data))
-      .catch((error) => console.error('Error al obtener reporte financiero:', error));
+  const cargarReporteFinanciero = async () => {
+    try {
+      const response = await axios.get('http://localhost:5003/api/reportes/financiero');
+      setReporteFinanciero(response.data);
+    } catch (error) {
+      console.error('Error al cargar el reporte financiero:', error);
+      setError('Error al cargar el reporte financiero.');
+    }
   };
 
   return (
-    <div className="section-container reportes-section">
-      <h2>Reportes Históricos</h2>
+    <div className="reportes-container">
+      <h1 className="reportes-title">Reportes Históricos</h1>
+
+      {error && <p className="error-message">{error}</p>}
 
       {/* Reporte de Ventas */}
-      <h3>Reporte de Ventas</h3>
-      {ventas.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ventas.map((venta) => (
-              <tr key={venta.id_venta}>
-                <td>{venta.id_venta}</td>
-                <td>{venta.fecha}</td>
-                <td>{venta.producto}</td>
-                <td>{venta.cantidad}</td>
-                <td>${venta.total.toFixed(2)}</td>
+      <div className="reporte">
+        <h2 className="reporte-subtitle">Reporte de Ventas</h2>
+        {reporteVentas ? (
+          <table className="reporte-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad Vendida</th>
+                <th>Última Venta</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No hay ventas registradas.</p>
-      )}
+            </thead>
+            <tbody>
+              <tr>
+                <td>{reporteVentas.producto || 'N/A'}</td>
+                <td>{reporteVentas.cantidad_vendida || 0}</td>
+                <td>{reporteVentas.ultima_venta || 'N/A'}</td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <p>No hay datos disponibles para el reporte de ventas.</p>
+        )}
+      </div>
 
-      {/* Reporte de Inventario */}
-      <h3>Reporte de Inventario</h3>
-      {inventario.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th>Stock</th>
-              <th>Precio</th>
-              <th>Fecha de Ingreso</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventario.map((producto) => (
-              <tr key={producto.cod_producto}>
-                <td>{producto.cod_producto}</td>
-                <td>{producto.nombre}</td>
-                <td>{producto.stock}</td>
-                <td>${producto.precio.toFixed(2)}</td>
-                <td>{producto.fecha_ingreso}</td>
+      {/* Reporte de Compras */}
+      <div className="reporte">
+        <h2 className="reporte-subtitle">Reporte de Compras</h2>
+        {reporteCompras ? (
+          <table className="reporte-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad Comprada</th>
+                <th>Última Compra</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No hay datos de inventario.</p>
-      )}
-
-      {/* Reporte de Compras (Incluye Proveedores) */}
-      <h3>Reporte de Compras</h3>
-      {compras.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Proveedor</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {compras.map((compra) => (
-              <tr key={compra.id_compra}>
-                <td>{compra.id_compra}</td>
-                <td>{compra.fecha}</td>
-                <td>{compra.producto}</td>
-                <td>{compra.cantidad}</td>
-                <td>{compra.proveedor}</td>
-                <td>${compra.total.toFixed(2)}</td>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{reporteCompras.producto || 'N/A'}</td>
+                <td>{reporteCompras.cantidad_comprada || 0}</td>
+                <td>{reporteCompras.ultima_compra || 'N/A'}</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No hay compras registradas.</p>
-      )}
-
-      {/* Reporte de Desempeño de Productos */}
-      <h3>Reporte de Desempeño de Productos</h3>
-      {desempenoProductos.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad Vendida</th>
-              <th>Ingresos Generados</th>
-            </tr>
-          </thead>
-          <tbody>
-            {desempenoProductos.map((producto) => (
-              <tr key={producto.nombre}>
-                <td>{producto.nombre}</td>
-                <td>{producto.cantidadVendida}</td>
-                <td>${producto.ingresos.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No hay datos de desempeño de productos.</p>
-      )}
+            </tbody>
+          </table>
+        ) : (
+          <p>No hay datos disponibles para el reporte de compras.</p>
+        )}
+      </div>
 
       {/* Reporte Financiero */}
-      <h3>Reporte Financiero</h3>
-      {financiero ? (
-        <div className="reporte-financiero">
-          <p><strong>Ingresos Totales:</strong> ${financiero.ingresosTotales.toFixed(2)}</p>
-          <p><strong>Gastos Totales:</strong> ${financiero.gastosTotales.toFixed(2)}</p>
-          <p><strong>Ganancia Neta:</strong> ${financiero.gananciaNeta.toFixed(2)}</p>
-        </div>
-      ) : (
-        <p>No hay datos financieros.</p>
-      )}
+      <div className="reporte">
+        <h2 className="reporte-subtitle">Reporte Financiero</h2>
+        {reporteFinanciero ? (
+          <table className="reporte-table">
+            <thead>
+              <tr>
+                <th>Total de Ventas</th>
+                <th>Total de Compras</th>
+                <th>Ganancias</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{reporteFinanciero.total_ventas || 0}</td>
+                <td>{reporteFinanciero.total_compras || 0}</td>
+                <td>{reporteFinanciero.ganancias || 0}</td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <p>No hay datos disponibles para el reporte financiero.</p>
+        )}
+      </div>
     </div>
   );
 };

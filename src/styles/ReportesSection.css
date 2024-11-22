@@ -1,42 +1,62 @@
-.reportes-section {
+/* Contenedor general para la sección de reportes */
+.reportes-container {
+  margin: 20px auto;
   padding: 20px;
+  max-width: 1200px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin: 30px auto;
-  max-width: 1000px;
+  margin-left: 40px; /* Mueve la sección un poco hacia la derecha */
 }
 
-.reportes-section h3 {
-  margin-top: 20px;
+/* Título principal de la sección */
+.reportes-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
 }
 
-.reportes-section table {
+/* Contenedor para cada reporte */
+.reporte {
+  margin-bottom: 40px;
+}
+
+/* Título de cada reporte */
+.reporte-subtitle {
+  font-size: 1.8rem;
+  color: #444;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 5px;
+}
+
+/* Tablas de reportes */
+.reporte-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
 }
 
-.reportes-section th,
-.reportes-section td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.reporte-table th,
+.reporte-table td {
   text-align: left;
+  border: 1px solid #ddd;
+  padding: 10px;
 }
 
-.reportes-section th {
+.reporte-table th {
   background-color: #f4f4f4;
+  font-weight: bold;
 }
 
-.reportes-section tbody tr:nth-child(even) {
+.reporte-table tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
-.reporte-financiero p {
-  margin: 5px 0;
-}
-
-.reportes-section p {
+/* Mensaje de texto cuando no hay datos */
+.reporte p {
   text-align: center;
   color: #888;
   font-style: italic;

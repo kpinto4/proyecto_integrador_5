@@ -225,14 +225,7 @@ app.post('/api/ventas', (req, res) => {
   }
 
   // Seleccionar el lote más antiguo con stock suficiente
-  const selectQuery = `
-    SELECT id_inventario, stock 
-    FROM inventario 
-    WHERE producto = ? AND stock > 0 
-    ORDER BY fechaingreso ASC 
-    LIMIT 1;
-  `;
-
+  const selectQuery = 'SELECT id_inventario, stock FROM inventario WHERE producto = ? AND stock > 0 ORDER BY fechaingreso ASC LIMIT 1;';
   inventoryDb.query(selectQuery, [cod_producto], (err, results) => {
     if (err) {
       console.error('Error al seleccionar lote:', err);
@@ -250,12 +243,7 @@ app.post('/api/ventas', (req, res) => {
     }
 
     // Actualizar el stock del lote seleccionado
-    const updateQuery = `
-      UPDATE inventario 
-      SET stock = stock - ? 
-      WHERE id_inventario = ?;
-    `;
-
+    const updateQuery = 'UPDATE inventario SET stock = stock - ? WHERE id_inventario = ?;';
     inventoryDb.query(updateQuery, [cantidad, id_inventario], (updateErr) => {
       if (updateErr) {
         console.error('Error al actualizar el stock:', updateErr);
@@ -263,13 +251,7 @@ app.post('/api/ventas', (req, res) => {
       }
 
       // Registrar la venta
-      const insertVentaQuery = `
-        INSERT INTO venta (cod_producto, cantidad, valor, fecha)
-        SELECT ?, ?, precio * ?, NOW()
-        FROM producto 
-        WHERE cod_producto = ?;
-      `;
-
+      const insertVentaQuery = 'INSERT INTO venta (cod_producto, cantidad, valor, fecha) SELECT ?, ?, precio * ?, NOW() FROM producto WHERE cod_producto = ?;';
       inventoryDb.query(insertVentaQuery, [cod_producto, cantidad, cantidad, cod_producto], (insertErr, result) => {
         if (insertErr) {
           console.error('Error al registrar la venta:', insertErr);
@@ -351,16 +333,7 @@ app.post('/api/compras', (req, res) => {
 });
 
 app.get('/api/alertas', (req, res) => {
-  const query = `
-    SELECT 
-      p.nombre AS producto,
-      i.stock, 
-      i.fechaingreso, 
-      DATEDIFF(NOW(), i.fechaingreso) AS dias_desde_ingreso
-    FROM inventario i
-    JOIN producto p ON i.producto = p.cod_producto
-    WHERE i.stock > 0 AND (i.stock <= 3 OR DATEDIFF(NOW(), i.fechaingreso) >= 5);
-  `;
+  const query = 'SELECT p.nombre AS producto, i.stock, i.fechaingreso, DATEDIFF(NOW(), i.fechaingreso) AS dias_desde_ingreso FROM inventario i JOIN producto p ON i.producto = p.cod_producto WHERE i.stock > 0 AND (i.stock <= 3 OR DATEDIFF(NOW(), i.fechaingreso) >= 5);';
   console.log('Ejecutando consulta:', query); // DEPURACIÓN
   inventoryDb.query(query, (err, results) => {
     if (err) {
@@ -373,7 +346,76 @@ app.get('/api/alertas', (req, res) => {
   });
 });
 
+app.get('/api/reportes/ventas', (req, res) => {
+  const query = 'SELECT p.nombre AS producto, SUM(v.cantidad) AS cantidad_vendida, MAX(v.fecha) AS ultima_venta FROM venta v JOIN producto p ON v.cod_producto = p.cod_producto WHERE v.fecha >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY p.cod_producto ORDER BY cantidad_vendida DESC LIMIT 1';
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener reporte de ventas:', err);
+      return res.status(500).json({ message: 'Error al obtener reporte de ventas.' });
+    }
+
+    if (results.length > 0) {
+      res.json(results[0]);
+    } else {
+      res.json({ message: 'No hay datos para el reporte semanal de ventas.' });
+    }
+  });
+});
+
+app.get('/api/reportes/compras', (req, res) => {
+  const query = 'SELECT p.nombre AS producto, SUM(c.cantidad) AS cantidad_comprada, MAX(c.fecha) AS ultima_compra FROM compra c JOIN producto p ON c.cod_producto = p.cod_producto WHERE c.fecha >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY p.cod_producto ORDER BY cantidad_comprada DESC LIMIT 1;';
+  inventoryDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener reporte de compras:', err);
+      return res.status(500).json({ message: 'Error al obtener reporte de compras.' });
+    }
+
+    if (results.length > 0) {
+      res.json(results[0]);
+    } else {
+      res.json({ message: 'No hay datos para el reporte semanal de compras.' });
+    }
+  });
+});
+
+app.get('/api/reportes/financiero', async (req, res) => {
+  try {
+    // Consulta para obtener el total de ventas
+    inventoryDb.query('SELECT SUM(valor) AS total_ventas FROM venta;', (err, ventasResult) => {
+      if (err) {
+        console.error('Error en consulta de ventas:', err);
+        res.status(500).json({ message: 'Error al obtener el reporte financiero (ventas).' });
+        return;
+      }
+      const totalVentas = ventasResult[0]?.total_ventas || 0;
+
+      // Consulta para obtener el total de compras
+      inventoryDb.query('SELECT SUM(total) AS total_compras FROM compra;', (err, comprasResult) => {
+        if (err) {
+          console.error('Error en consulta de compras:', err);
+          res.status(500).json({ message: 'Error al obtener el reporte financiero (compras).' });
+          return;
+        }
+        const totalCompras = comprasResult[0]?.total_compras || 0;
+
+        // Calcular las ganancias
+        const ganancias = totalVentas - totalCompras;
+
+        // Responder con los datos
+        res.json({
+          total_ventas: totalVentas,
+          total_compras: totalCompras,
+          ganancias,
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error general al obtener el reporte financiero:', error);
+    res.status(500).json({ message: 'Error general al obtener el reporte financiero.' });
+  }
+});
+
 // Escucha en el puerto 5003
 app.listen(5003, () => {
-  console.log('Servicio de Inventario corriendo en el puerto 5003');
+  console.log('Servicio de Login corriendo en el puerto 5003');
 });
