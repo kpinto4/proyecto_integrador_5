@@ -1,80 +1,111 @@
-/* src/styles/UsuariosSection.css */
-
-.section-container {
+.usuarios-container {
   padding: 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin: 30px auto;
-  max-width: 1000px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 900px;
 }
 
-.formulario-usuario {
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.form {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
-.input-usuario {
+input,
+select {
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 5px;
   flex: 1;
   min-width: 150px;
-  box-sizing: border-box;
 }
 
-.btn-usuario {
-  padding: 8px 16px;
+.form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  padding: 8px 15px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
   background-color: #007bff;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
 }
 
-.btn-usuario:hover {
+.btn-primary:hover {
   background-color: #0056b3;
 }
 
-.tabla-usuarios {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ced4da;
 }
 
-.tabla-usuarios th,
-.tabla-usuarios td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.btn-secondary:hover {
+  background-color: #e2e6ea;
 }
 
-.tabla-usuarios th {
-  background-color: #f2f2f2;
-  color: #333;
-}
-
-.btn-accion {
+.btn-edit {
+  background-color: #28a745;
+  color: white;
   padding: 5px 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
-  color: white;
-  transition: opacity 0.3s;
-  margin-right: 5px;
 }
 
-.btn-accion:first-child {
-  background-color: #28a745;
+.btn-edit:hover {
+  background-color: #218838;
 }
 
-.btn-accion:last-child {
+.btn-delete {
   background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.btn-accion:hover {
-  opacity: 0.8;
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #f8f9fa;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+th {
+  font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
 }

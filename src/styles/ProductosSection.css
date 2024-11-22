@@ -34,7 +34,7 @@
 }
 
 .btn-accion.agregar {
-  background-color: #28a745;
+  background-color: #007bff;
 }
 
 .btn-accion.actualizar {
@@ -46,7 +46,7 @@
 }
 
 .btn-accion.editar {
-  background-color: #ffc107;
+  background-color: #28a745;
 }
 
 .btn-accion.eliminar {

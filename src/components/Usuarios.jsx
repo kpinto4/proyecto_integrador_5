@@ -1,138 +1,149 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/UsuariosSection.css';
 
-const UsuariosSection = () => {
+function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  const [usuarioEditable, setUsuarioEditable] = useState(null);
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [cargo, setCargo] = useState('administrador');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [cargo, setCargo] = useState('Empleado');
+  const [enEdicion, setEnEdicion] = useState(false);
+  const [idUsuarioActual, setIdUsuarioActual] = useState(null);
 
   useEffect(() => {
-    fetchUsuarios();
+    cargarUsuarios();
   }, []);
 
-  const fetchUsuarios = () => {
-    fetch('http://localhost:5003/api/usuarios')
-      .then((response) => response.json())
-      .then((data) => setUsuarios(data))
-      .catch((error) => console.error('Error al obtener usuarios:', error));
+  const cargarUsuarios = async () => {
+    try {
+      const response = await fetch('http://localhost:5002/api/usuarios');
+      const data = await response.json();
+      setUsuarios(data);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+    }
   };
 
-  const resetForm = () => {
-    setNombre('');
-    setApellido('');
-    setCorreo('');
-    setTelefono('');
-    setCargo('administrador');
-    setUsuarioEditable(null);
+  const handleAgregar = async () => {
+    try {
+      const nuevoUsuario = { nombre, apellido, username, password, cargo };
+      await fetch('http://localhost:5002/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoUsuario),
+      });
+      cargarUsuarios();
+      limpiarCampos();
+    } catch (error) {
+      console.error('Error al agregar usuario:', error);
+    }
   };
 
-  const handleSave = () => {
-    const method = usuarioEditable ? 'PUT' : 'POST';
-    const url = usuarioEditable
-      ? `http://localhost:5003/api/usuarios/${usuarioEditable.id}`
-      : 'http://localhost:5003/api/usuarios';
-
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, apellido, correo, telefono, cargo }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert(`Usuario ${usuarioEditable ? 'actualizado' : 'agregado'} exitosamente`);
-          fetchUsuarios();
-          resetForm();
-        } else {
-          alert('Error al guardar usuario');
-        }
-      })
-      .catch((error) => console.error('Error:', error));
-  };
-
-  const handleEdit = (usuario) => {
-    setUsuarioEditable(usuario);
+  const handleEditarClick = (usuario) => {
     setNombre(usuario.nombre);
     setApellido(usuario.apellido);
-    setCorreo(usuario.correo);
-    setTelefono(usuario.telefono);
+    setUsername(usuario.username);
+    setPassword(usuario.password);
     setCargo(usuario.cargo);
+    setIdUsuarioActual(usuario.id);
+    setEnEdicion(true);
   };
 
-  const handleDelete = (id) => {
-    fetch(`http://localhost:5003/api/usuarios/${id}`, {
-      method: 'DELETE',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert('Usuario eliminado exitosamente');
-          fetchUsuarios();
-        } else {
-          alert('Error al eliminar usuario');
-        }
-      })
-      .catch((error) => console.error('Error al eliminar usuario:', error));
+  const handleActualizar = async () => {
+    try {
+      const usuarioActualizado = { nombre, apellido, username, password, cargo };
+      await fetch(`http://localhost:5002/api/usuarios/${idUsuarioActual}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(usuarioActualizado),
+      });
+      cargarUsuarios();
+      limpiarCampos();
+      setEnEdicion(false);
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+    }
+  };
+
+  const handleEliminar = async (id) => {
+    try {
+      await fetch(`http://localhost:5002/api/usuarios/${id}`, { method: 'DELETE' });
+      cargarUsuarios();
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+    }
+  };
+
+  const handleCancelar = () => {
+    limpiarCampos();
+    setEnEdicion(false);
+  };
+
+  const limpiarCampos = () => {
+    setNombre('');
+    setApellido('');
+    setUsername('');
+    setPassword('');
+    setCargo('Empleado');
+    setIdUsuarioActual(null);
   };
 
   return (
-    <div className="section-container">
-      <h2>Gestionar Usuarios</h2>
-      <form className="formulario-usuario">
+    <div className="usuarios-container">
+      <h2>Gestión de Usuarios</h2>
+      <div className="form">
         <input
           type="text"
           placeholder="Nombre"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="input-usuario"
         />
         <input
           type="text"
           placeholder="Apellido"
           value={apellido}
           onChange={(e) => setApellido(e.target.value)}
-          className="input-usuario"
-        />
-        <input
-          type="email"
-          placeholder="Correo Electrónico"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
-          className="input-usuario"
         />
         <input
           type="text"
-          placeholder="Teléfono"
-          value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
-          className="input-usuario"
+          placeholder="Usuario"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
-        <select
-          value={cargo}
-          onChange={(e) => setCargo(e.target.value)}
-          className="input-usuario"
-        >
-          <option value="administrador">Administrador</option>
-          <option value="gestor_inventario">Gestor de Inventario</option>
-          <option value="directivo">Directivo</option>
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
+          <option value="Empleado">Empleado</option>
+          <option value="Administrador">Administrador</option>
         </select>
-        <button type="button" onClick={handleSave} className="btn-usuario">
-          {usuarioEditable ? 'Actualizar' : 'Agregar'} Usuario
-        </button>
-      </form>
-
-      <h3>Lista de Usuarios</h3>
-      <table className="tabla-usuarios">
+        <div className="form-actions">
+          {enEdicion ? (
+            <>
+              <button className="btn btn-primary" onClick={handleActualizar}>
+                Actualizar
+              </button>
+              <button className="btn btn-secondary" onClick={handleCancelar}>
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-primary" onClick={handleAgregar}>
+              Agregar
+            </button>
+          )}
+        </div>
+      </div>
+      <table>
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Apellido</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
+            <th>Usuario</th>
             <th>Cargo</th>
             <th>Acciones</th>
           </tr>
@@ -142,14 +153,19 @@ const UsuariosSection = () => {
             <tr key={usuario.id}>
               <td>{usuario.nombre}</td>
               <td>{usuario.apellido}</td>
-              <td>{usuario.correo}</td>
-              <td>{usuario.telefono}</td>
+              <td>{usuario.username}</td>
               <td>{usuario.cargo}</td>
               <td>
-                <button onClick={() => handleEdit(usuario)} className="btn-accion">
+                <button
+                  className="btn btn-edit"
+                  onClick={() => handleEditarClick(usuario)}
+                >
                   Editar
                 </button>
-                <button onClick={() => handleDelete(usuario.id)} className="btn-accion">
+                <button
+                  className="btn btn-delete"
+                  onClick={() => handleEliminar(usuario.id)}
+                >
                   Eliminar
                 </button>
               </td>
@@ -159,6 +175,6 @@ const UsuariosSection = () => {
       </table>
     </div>
   );
-};
+}
 
-export default UsuariosSection;
+export default Usuarios;
